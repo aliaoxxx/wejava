@@ -68,6 +68,10 @@ const emit = defineEmits<{ search: []; reset: [] }>()
 
 <style scoped>
 .crud-search {
-  margin-bottom: 4px;
+  margin-bottom: -18px;
+}
+
+.crud-search :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 </style>

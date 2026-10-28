@@ -39,15 +39,17 @@ function onSizeChange(size: number) {
 </script>
 
 <template>
-  <el-card shadow="never">
+  <!-- 搜索区独立成卡片 -->
+  <el-card v-if="schema.search?.length" shadow="never" class="crud-search-card">
     <CrudSearch
-      v-if="schema.search?.length"
       :schema="schema"
       :model="crud.searchModel"
       @search="crud.handleSearch"
       @reset="crud.handleReset"
     />
+  </el-card>
 
+  <el-card shadow="never">
     <div class="crud-toolbar">
       <el-button v-if="canAdd && !schema.readonly" type="primary" @click="crud.openCreate()">新增</el-button>
       <el-button
@@ -97,6 +99,9 @@ function onSizeChange(size: number) {
 </template>
 
 <style scoped>
+.crud-search-card {
+  margin-bottom: 12px;
+}
 .crud-toolbar {
   display: flex;
   gap: 8px;
