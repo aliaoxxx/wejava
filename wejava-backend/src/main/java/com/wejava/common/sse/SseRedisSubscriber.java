@@ -2,6 +2,7 @@ package com.wejava.common.sse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -23,7 +24,16 @@ public class SseRedisSubscriber {
     private final SseHub sseHub;
     private final JsonMapper jsonMapper;
 
+    /**
+     * 订阅容器在启动时就会连接 Redis。单元测试环境没有 Redis，
+     * 因此提供开关（wejava.sse.redis-subscriber），测试配置里关掉。
+     */
     @Bean
+    @ConditionalOnProperty(
+            prefix = "wejava.sse",
+            name = "redis-subscriber",
+            havingValue = "true",
+            matchIfMissing = true)
     public RedisMessageListenerContainer sseListenerContainer(RedisConnectionFactory factory) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);

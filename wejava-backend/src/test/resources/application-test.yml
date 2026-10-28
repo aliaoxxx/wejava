@@ -18,3 +18,8 @@ mybatis-plus:
 logging:
   level:
     com.wejava: info
+
+# 单测不连 Redis，关闭 SSE 的跨实例订阅容器
+wejava:
+  sse:
+    redis-subscriber: false
