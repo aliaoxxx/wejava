@@ -7,6 +7,20 @@ const loading = ref(false)
 const list = ref<any[]>([])
 const saving = ref(false)
 const formRef = ref<FormInstance>()
+const tableRef = ref()
+/** 默认折叠：大菜单树一次全展开反而难找 */
+const expandedAll = ref(false)
+
+function toggleExpand() {
+  expandedAll.value = !expandedAll.value
+  const walk = (rows: any[]) => {
+    rows.forEach((row) => {
+      tableRef.value?.toggleRowExpansion(row, expandedAll.value)
+      if (row.children?.length) walk(row.children)
+    })
+  }
+  walk(list.value)
+}
 const parentOptions = ref<any[]>([])
 
 const dialog = reactive({
@@ -111,10 +125,11 @@ onMounted(() => {
   <el-card shadow="never">
     <div class="toolbar">
       <el-button v-hasPerm="'system:menu:add'" type="primary" @click="openCreate()">新增菜单</el-button>
+      <el-button @click="toggleExpand">{{ expandedAll ? '全部折叠' : '全部展开' }}</el-button>
       <el-button @click="fetchList">刷新</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="list" row-key="menuId" border default-expand-all
+    <el-table ref="tableRef" v-loading="loading" :data="list" row-key="menuId" border
       :tree-props="{ children: 'children' }">
       <el-table-column prop="menuName" label="菜单名称" min-width="180" />
       <el-table-column label="类型" width="80" align="center">
