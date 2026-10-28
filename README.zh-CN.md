@@ -174,3 +174,7 @@ pnpm build
 - [前端配置驱动设计](docs/06-前端配置驱动设计.md)
 - [部署方案](docs/07-部署方案.md)
 - [避坑清单](docs/避坑清单.md)
+
+## 许可
+
+[MIT](LICENSE) © 2026 ZHAO ZHENYU
