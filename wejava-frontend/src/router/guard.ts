@@ -29,7 +29,9 @@ router.beforeEach(async (to, _from, next) => {
       routes.forEach((route: RouteRecordRaw) => router.addRoute(route))
       // 动态路由加完后重新导航一次，否则当前地址匹配不到
       return next({ ...to, replace: true })
-    } catch {
+    } catch (error) {
+      // 这里静默踢回登录页最难排查，务必留下现场
+      console.error('[router] 初始化用户或注册动态路由失败', error)
       await userStore.reset()
       return next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
     }
