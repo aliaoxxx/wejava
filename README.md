@@ -106,7 +106,7 @@ Flyway seeds 61 menus, 2 roles and 2 accounts (`admin` as super admin, `tester` 
 ```
 wejava/
 ├── docs/                     design documents (Chinese)
-│   ├── 01-数据库设计.md       DDL and seed data for the 15 tables
+│   ├── 01-数据库设计.md       DDL and seed data for the 17 tables
 │   ├── 02-认证与权限设计.md    authentication and authorization
 │   ├── 03-接口设计.md          API design
 │   ├── 04-前端设计.md          frontend design

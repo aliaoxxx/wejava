@@ -379,6 +379,44 @@ CREATE TABLE `sys_oper_log` (
 
 ---
 
+### Site Messages (added in V6)
+
+Publishing a notice delivers it to user inboxes. `sys_message` holds the message body,
+`sys_message_user` holds one row per recipient with its read state.
+
+```sql
+CREATE TABLE `sys_message` (
+  `message_id`  bigint       NOT NULL AUTO_INCREMENT COMMENT 'message id',
+  `title`       varchar(100) NOT NULL COMMENT 'title',
+  `content`     text                  DEFAULT NULL COMMENT 'body',
+  `msg_type`    tinyint      NOT NULL DEFAULT 1 COMMENT 'type: 1 notice, 2 system, 3 personal',
+  `level`       tinyint      NOT NULL DEFAULT 0 COMMENT 'level: 0 normal, 1 important, 2 urgent',
+  `link`        varchar(200)          DEFAULT NULL COMMENT 'frontend route opened on click',
+  `source_id`   bigint                DEFAULT NULL COMMENT 'source business id (e.g. notice id)',
+  `create_by`   varchar(64)           DEFAULT NULL,
+  `create_time` datetime(3)           DEFAULT NULL,
+  PRIMARY KEY (`message_id`),
+  KEY `idx_message_source` (`source_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='site messages';
+
+CREATE TABLE `sys_message_user` (
+  `id`          bigint      NOT NULL AUTO_INCREMENT,
+  `message_id`  bigint      NOT NULL COMMENT 'message id',
+  `user_id`     bigint      NOT NULL COMMENT 'recipient',
+  `read_flag`   tinyint     NOT NULL DEFAULT 0 COMMENT '0 unread, 1 read',
+  `read_time`   datetime(3)          DEFAULT NULL,
+  `create_time` datetime(3)          DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_message_user` (`message_id`, `user_id`),
+  KEY `idx_user_unread` (`user_id`, `read_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='message recipients';
+```
+
+**Why two tables**: the body is stored once while each recipient keeps its own read state.
+Editing a notice updates what every recipient sees, because the body is never copied into inboxes.
+
+---
+
 ## 4. Initial Data
 
 ```sql

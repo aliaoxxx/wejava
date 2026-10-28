@@ -31,6 +31,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: { title: '首页', icon: 'HomeFilled' }
       },
       {
+        path: 'message',
+        name: 'Message',
+        component: () => import('@/views/message/index.vue'),
+        meta: { title: '消息中心', hidden: true }
+      },
+      {
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/profile/index.vue'),

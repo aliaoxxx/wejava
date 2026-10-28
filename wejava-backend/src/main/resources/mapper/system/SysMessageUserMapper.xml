@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wejava.system.mapper.SysMessageUserMapper">
+
+    <!-- 批量投递：收件人已存在则跳过，重复投递不会产生重复未读 -->
+    <insert id="insertRecipients">
+        INSERT INTO sys_message_user (message_id, user_id, read_flag, create_time)
+        VALUES
+        <foreach collection="userIds" item="userId" separator=",">
+            (#{messageId}, #{userId}, 0, NOW(3))
+        </foreach>
+        ON DUPLICATE KEY UPDATE message_id = message_id
+    </insert>
+
+    <select id="selectInbox" resultType="com.wejava.system.model.vo.MessageVO">
+        SELECT m.message_id  AS messageId,
+               m.title       AS title,
+               m.content     AS content,
+               m.msg_type    AS msgType,
+               m.level       AS level,
+               m.link        AS link,
+               u.read_flag   AS readFlag,
+               u.read_time   AS readTime,
+               m.create_time AS createTime
+          FROM sys_message_user u
+          JOIN sys_message m ON m.message_id = u.message_id
+         WHERE u.user_id = #{userId}
+        <if test="query.msgType != null">
+            AND m.msg_type = #{query.msgType}
+        </if>
+        <if test="query.readFlag != null">
+            AND u.read_flag = #{query.readFlag}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND m.title LIKE CONCAT('%', #{query.keyword}, '%')
+        </if>
+         ORDER BY m.message_id DESC
+    </select>
+
+</mapper>

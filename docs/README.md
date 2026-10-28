@@ -11,7 +11,7 @@
 
 | 文档 | 内容 | English |
 |---|---|---|
-| [01-数据库设计](01-数据库设计.md) | 15 张表完整 DDL、索引、数据权限字段、初始化数据 | [01-database-design](en/01-database-design.md) |
+| [01-数据库设计](01-数据库设计.md) | 17 张表完整 DDL、索引、数据权限字段、初始化数据（含站内消息） | [01-database-design](en/01-database-design.md) |
 | [02-认证与权限设计](02-认证与权限设计.md) | 登录时序、Token 结构、Redis 规范、过滤器链、RBAC、数据权限 | [02-auth-and-permissions](en/02-auth-and-permissions.md) |
 | [03-接口设计](03-接口设计.md) | 统一返回体、错误码、全部接口清单、权限字符表 | [03-api-design](en/03-api-design.md) |
 | [04-前端设计](04-前端设计.md) | 目录结构、动态路由、axios 刷新队列、权限指令 | [04-frontend-design](en/04-frontend-design.md) |

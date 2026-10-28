@@ -11,7 +11,7 @@ The authentication scheme is **self-managed JWT + Redis session whitelist** (no 
 
 | Document | Contents | Chinese |
 |---|---|---|
-| [01-database-design](01-database-design.md) | Complete DDL for 15 tables, indexes, data permission columns, seed data | [01-数据库设计](../01-数据库设计.md) |
+| [01-database-design](01-database-design.md) | Complete DDL for 17 tables, indexes, data permission columns, seed data (including messaging) | [01-数据库设计](../01-数据库设计.md) |
 | [02-auth-and-permissions](02-auth-and-permissions.md) | Login sequence, token structure, Redis conventions, filter chain, RBAC, data permission | [02-认证与权限设计](../02-认证与权限设计.md) |
 | [03-api-design](03-api-design.md) | Unified response body, error codes, full endpoint list, permission string table | [03-接口设计](../03-接口设计.md) |
 | [04-frontend-design](04-frontend-design.md) | Directory structure, dynamic routes, axios refresh queue, permission directive | [04-前端设计](../04-前端设计.md) |

@@ -1,36 +1,52 @@
 import { defineStore } from 'pinia'
+import { getUnreadCount, listMessage, markAllMessageRead, markMessageRead } from '@/api/message'
 
 export interface SiteMessage {
-  id: string
+  messageId: string
   title: string
   content: string
-  read: boolean
-  createdAt: string
+  msgType: number
+  level: number
+  link?: string
+  readFlag: number
+  createTime: string
 }
 
-/**
- * 站内消息。当前只有前端占位，等后端消息接口就绪后，
- * 把 fetchMessages 换成真实请求即可，组件层不需要改动。
- */
+/** 站内消息：公告与系统消息统一收件箱 */
 export const useMessageStore = defineStore('message', () => {
-  const messages = ref<SiteMessage[]>([])
+  const recent = ref<SiteMessage[]>([])
+  const unreadCount = ref(0)
   const loading = ref(false)
 
-  const unreadCount = computed(() => messages.value.filter((item) => !item.read).length)
+  async function refreshUnread() {
+    const res = await getUnreadCount()
+    unreadCount.value = Number(res.data ?? 0)
+  }
 
-  async function fetchMessages() {
+  async function fetchRecent() {
     loading.value = true
     try {
-      // 后端接口就绪前保持空列表，避免伪造数据
-      messages.value = []
+      const res = await listMessage({ pageNum: 1, pageSize: 5 })
+      recent.value = res.data?.list ?? []
     } finally {
       loading.value = false
     }
   }
 
-  function markAllRead() {
-    messages.value = messages.value.map((item) => ({ ...item, read: true }))
+  async function readOne(messageId: string) {
+    await markMessageRead(messageId)
+    const item = recent.value.find((msg) => msg.messageId === messageId)
+    if (item && item.readFlag === 0) {
+      item.readFlag = 1
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+    }
   }
 
-  return { messages, loading, unreadCount, fetchMessages, markAllRead }
+  async function readAll() {
+    await markAllMessageRead()
+    recent.value = recent.value.map((msg) => ({ ...msg, readFlag: 1 }))
+    unreadCount.value = 0
+  }
+
+  return { recent, unreadCount, loading, refreshUnread, fetchRecent, readOne, readAll }
 })

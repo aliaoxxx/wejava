@@ -1,4 +1,18 @@
 <script setup lang="ts">
+import { useMessageStore } from '@/store/modules/message'
+
+const messageStore = useMessageStore()
+let unreadTimer: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  messageStore.refreshUnread()
+  // 60 秒轮询未读数；后续要实时可换成 SSE
+  unreadTimer = setInterval(() => messageStore.refreshUnread(), 60000)
+})
+
+onBeforeUnmount(() => {
+  if (unreadTimer) clearInterval(unreadTimer)
+})
 import Sidebar from './components/Sidebar.vue'
 import Navbar from './components/Navbar.vue'
 import AppMain from './components/AppMain.vue'

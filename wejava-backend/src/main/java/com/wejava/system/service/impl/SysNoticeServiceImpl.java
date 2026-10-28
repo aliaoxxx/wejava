@@ -11,6 +11,7 @@ import com.wejava.system.model.entity.SysNotice;
 import com.wejava.system.model.form.SysNoticeForm;
 import com.wejava.system.model.query.SysNoticeQuery;
 import com.wejava.system.model.vo.SysNoticeVO;
+import com.wejava.system.service.MessageService;
 import com.wejava.system.service.SysNoticeService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class SysNoticeServiceImpl implements SysNoticeService {
 
     private final SysNoticeMapper noticeMapper;
     private final SysNoticeConverter converter;
+    private final MessageService messageService;
 
     @Override
     public PageResult<SysNoticeVO> page(SysNoticeQuery query) {
@@ -58,6 +60,7 @@ public class SysNoticeServiceImpl implements SysNoticeService {
             entity.setStatus(0);
         }
         noticeMapper.insert(entity);
+        deliverIfPublished(entity, true);
         return entity.getNoticeId();
     }
 
@@ -65,14 +68,35 @@ public class SysNoticeServiceImpl implements SysNoticeService {
     @Transactional(rollbackFor = Exception.class)
     public void update(SysNoticeForm form) {
         SysNotice entity = requireNotice(form.getNoticeId());
+        boolean wasPublished = Integer.valueOf(0).equals(entity.getStatus());
         converter.update(form, entity);
         noticeMapper.updateById(entity);
+        deliverIfPublished(entity, !wasPublished);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void remove(List<Long> noticeIds) {
         noticeMapper.deleteByIds(noticeIds);
+    }
+
+    /** 公告变为「正常」时投递到全员收件箱；已是正常的修改不重复投递 */
+    private void deliverIfPublished(SysNotice notice, boolean shouldDeliver) {
+        if (!shouldDeliver || !Integer.valueOf(0).equals(notice.getStatus())) {
+            return;
+        }
+        messageService.deliverToAll(
+                notice.getNoticeTitle(),
+                notice.getNoticeContent(),
+                1,
+                notificationLevel(notice.getNoticeType()),
+                "/system/notice",
+                notice.getNoticeId());
+    }
+
+    private int notificationLevel(Integer noticeType) {
+        // 公告(2)标记为重要，通知(1)为普通
+        return Integer.valueOf(2).equals(noticeType) ? 1 : 0;
     }
 
     private SysNotice requireNotice(Long noticeId) {
