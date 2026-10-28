@@ -10,11 +10,10 @@ import com.wejava.ai.model.entity.SysAiSession;
 import com.wejava.ai.model.form.AiChatForm;
 import com.wejava.ai.model.vo.AiMessageVO;
 import com.wejava.ai.service.AiChatService;
+import com.wejava.ai.service.AiConfigService;
 import com.wejava.common.config.AsyncConfig;
 import com.wejava.common.exception.BizException;
 import com.wejava.common.exception.ErrorCode;
-import com.wejava.system.mapper.SysConfigMapper;
-import com.wejava.system.model.entity.SysConfig;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class AiChatServiceImpl implements AiChatService {
 
     private final SysAiSessionMapper sessionMapper;
     private final SysAiMessageMapper messageMapper;
-    private final SysConfigMapper configMapper;
+    private final AiConfigService aiConfigService;
     private final DeepSeekClient client;
     private final ExecutorService aiExecutor;
 
@@ -46,12 +45,12 @@ public class AiChatServiceImpl implements AiChatService {
     public AiChatServiceImpl(
             SysAiSessionMapper sessionMapper,
             SysAiMessageMapper messageMapper,
-            SysConfigMapper configMapper,
+            AiConfigService aiConfigService,
             DeepSeekClient client,
             @Qualifier(AsyncConfig.AI_EXECUTOR) ExecutorService aiExecutor) {
         this.sessionMapper = sessionMapper;
         this.messageMapper = messageMapper;
-        this.configMapper = configMapper;
+        this.aiConfigService = aiConfigService;
         this.client = client;
         this.aiExecutor = aiExecutor;
     }
@@ -69,6 +68,11 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     private void doStream(Long userId, AiChatForm form, SseEmitter emitter, AtomicBoolean cancelled) {
+        if (!aiConfigService.enabled()) {
+            sendError(emitter, "AI 功能已停用，请在「AI 配置」中启用");
+            return;
+        }
+
         String apiKey = resolveApiKey();
         if (apiKey == null) {
             sendError(emitter, "未配置 DeepSeek API Key，请在环境变量 DEEPSEEK_API_KEY 或参数设置中配置");
@@ -85,9 +89,9 @@ public class AiChatServiceImpl implements AiChatService {
 
         try {
             client.stream(
-                    config("sys.ai.baseUrl", "https://api.deepseek.com"),
+                    aiConfigService.baseUrl(),
                     apiKey,
-                    config("sys.ai.model", "deepseek-chat"),
+                    aiConfigService.model(),
                     history.stream()
                             .map(item -> Map.of("role", item.role(), "content", item.content()))
                             .toList(),
@@ -158,7 +162,7 @@ public class AiChatServiceImpl implements AiChatService {
         SysAiSession session = new SysAiSession();
         session.setUserId(userId);
         session.setTitle(form.getContent().length() > 30 ? form.getContent().substring(0, 30) : form.getContent());
-        session.setModel(config("sys.ai.model", "deepseek-chat"));
+        session.setModel(aiConfigService.model());
         session.setCreateTime(LocalDateTime.now());
         session.setUpdateTime(LocalDateTime.now());
         sessionMapper.insert(session);
@@ -196,23 +200,12 @@ public class AiChatServiceImpl implements AiChatService {
         messageMapper.insert(message);
     }
 
+    /** 环境变量优先，其次「AI 配置」页保存的加密值 */
     private String resolveApiKey() {
         if (apiKeyFromEnv != null && !apiKeyFromEnv.isBlank()) {
             return apiKeyFromEnv.trim();
         }
-        String fromDb = config("sys.ai.apiKey", null);
-        return fromDb == null || fromDb.isBlank() ? null : fromDb.trim();
-    }
-
-    private String config(String key, String defaultValue) {
-        SysConfig config =
-                configMapper.selectOne(Wrappers.<SysConfig>lambdaQuery().eq(SysConfig::getConfigKey, key));
-        if (config == null
-                || config.getConfigValue() == null
-                || config.getConfigValue().isBlank()) {
-            return defaultValue;
-        }
-        return config.getConfigValue();
+        return aiConfigService.plainApiKey();
     }
 
     private void sendError(SseEmitter emitter, String message) {
