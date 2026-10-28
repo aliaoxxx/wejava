@@ -11,7 +11,7 @@
 
 | Item | Rule |
 |---|---|
-| Primary key | `bigint`, snowflake ID (MyBatis-Plus `ASSIGN_ID`), **serialized as String in the API** |
+| Primary key | `bigint AUTO_INCREMENT` (MyBatis-Plus `AUTO`), never generated client-side; **serialized as String in the API** |
 | Audit fields | Every table must contain `create_by / create_time / update_by / update_time`, filled in automatically by `MetaObjectHandler` |
 | Logical deletion | Business tables contain `del_flag tinyint`, `0` exists / `1` deleted; `@TableLogic` |
 | Status field | `status tinyint`, `0` normal / `1` disabled |

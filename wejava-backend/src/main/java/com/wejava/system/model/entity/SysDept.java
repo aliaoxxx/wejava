@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_dept")
 public class SysDept extends BaseEntity {
 
-    @TableId(value = "dept_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "dept_id", type = IdType.AUTO)
     private Long deptId;
 
     private Long parentId;

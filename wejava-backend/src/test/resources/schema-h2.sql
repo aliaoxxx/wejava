@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS sys_user;
 
 CREATE TABLE sys_user (
-    user_id         BIGINT       NOT NULL PRIMARY KEY,
+    user_id         BIGINT       AUTO_INCREMENT NOT NULL PRIMARY KEY,
     dept_id         BIGINT,
     username        VARCHAR(30)  NOT NULL,
     nickname        VARCHAR(30)  NOT NULL,

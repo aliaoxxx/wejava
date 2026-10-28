@@ -10,7 +10,7 @@ import lombok.Data;
 @TableName("sys_login_log")
 public class SysLoginLog {
 
-    @TableId(value = "info_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "info_id", type = IdType.AUTO)
     private Long infoId;
 
     private String username;

@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_dict_type")
 public class SysDictType extends BaseEntity {
 
-    @TableId(value = "dict_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "dict_id", type = IdType.AUTO)
     private Long dictId;
 
     private String dictName;

@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_post")
 public class SysPost extends BaseEntity {
 
-    @TableId(value = "post_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "post_id", type = IdType.AUTO)
     private Long postId;
 
     private String postCode;

@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_notice")
 public class SysNotice extends BaseEntity {
 
-    @TableId(value = "notice_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "notice_id", type = IdType.AUTO)
     private Long noticeId;
 
     private String noticeTitle;

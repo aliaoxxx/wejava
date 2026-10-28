@@ -199,7 +199,7 @@ wejava-backend/
 - 需要软删的表必须有 `del_flag`
 - 金额用 `decimal(18,2)`，禁用 `float/double`
 - 时间统一 `datetime(3)`，时区固定 `Asia/Shanghai`
-- 主键统一 `bigint`（雪花 ID），**序列化给前端时转 String**
+- 主键统一 `bigint AUTO_INCREMENT`（由数据库生成），**序列化给前端时转 String**
 
 ---
 

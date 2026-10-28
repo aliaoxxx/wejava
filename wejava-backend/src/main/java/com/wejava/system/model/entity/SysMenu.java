@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_menu")
 public class SysMenu extends BaseEntity {
 
-    @TableId(value = "menu_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "menu_id", type = IdType.AUTO)
     private Long menuId;
 
     private String menuName;

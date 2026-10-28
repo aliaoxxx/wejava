@@ -13,7 +13,7 @@ import lombok.Data;
 @TableName("sys_oper_log")
 public class SysOperLog {
 
-    @TableId(value = "oper_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "oper_id", type = IdType.AUTO)
     private Long operId;
 
     private String title;

@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_role")
 public class SysRole extends BaseEntity {
 
-    @TableId(value = "role_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "role_id", type = IdType.AUTO)
     private Long roleId;
 
     private String roleName;
