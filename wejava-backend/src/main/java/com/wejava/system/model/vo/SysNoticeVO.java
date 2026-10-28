@@ -11,5 +11,7 @@ public class SysNoticeVO {
     private Integer noticeType;
     private String noticeContent;
     private Integer status;
+    private Integer targetType;
+    private String targetIds;
     private LocalDateTime createTime;
 }

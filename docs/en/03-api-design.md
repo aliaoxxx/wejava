@@ -683,3 +683,73 @@ instance id so an instance never consumes its own message and double-delivers.
 
 ---
 
+---
+
+## 15. Site Messages and AI
+
+### 15.1 Site Messages `/system/message`
+
+Personal data: any authenticated user can access it, no permission string required.
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/unread-count` | Unread count |
+| GET | `/list` | Inbox page (msgType / readFlag / keyword) |
+| GET | `/{messageId}` | Detail; 403 if the message is not yours |
+| PUT | `/{messageId}/read` | Mark one as read |
+| PUT | `/read-all` | Mark all as read |
+| POST | `/send` | Send from the admin side, permission `system:message:send` |
+
+Send payload:
+
+```json
+{
+  "title": "Maintenance notice",
+  "content": "Maintenance starts at 23:00 tonight",
+  "msgType": 2,
+  "level": 1,
+  "targetType": 3,
+  "targetIds": [101],
+  "link": "/system/notice"
+}
+```
+
+`targetType`: 1 all / 2 by role / 3 by department / 4 explicit users.
+Department matching uses `FIND_IN_SET` on `ancestors`, so selecting a parent
+department also includes every member of its descendants.
+
+### 15.2 Targeted Notice Delivery
+
+`sys_notice` gained `target_type` and `target_ids`; publishing reuses the same
+recipient resolver. Existing rows default to `target_type = 1` (everyone),
+so their behaviour is unchanged.
+
+### 15.3 AI Chat `/ai`
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/chat` | Streaming chat, returns `text/event-stream` |
+| GET | `/session/{sessionId}/messages` | Session history |
+
+Events: `delta` (incremental text), `done` (usage and latency), `error` (failure reason).
+
+```json
+{"sessionId": "1", "content": "Hello"}
+```
+
+### 15.4 AI Config `/system/ai-config`
+
+| Method | Path | Permission |
+|---|---|---|
+| GET | `/system/ai-config` | `system:ai:config` |
+| PUT | `/system/ai-config` | `system:ai:config` |
+
+The API key is stored with AES-GCM and **only ever returned masked**
+(e.g. `xxxx****xxxx`); submitting an empty value or the mask keeps the existing key.
+The encryption secret comes from the `AI_CONFIG_SECRET` environment variable.
+
+### 15.5 Startup Check in Production
+
+With the `prod` profile active, `JWT_SECRET` and `AI_CONFIG_SECRET` are validated at
+startup. If either still holds the development default the process exits immediately,
+so a deployment can never go live with breakable secrets.

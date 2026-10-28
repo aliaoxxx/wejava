@@ -11,11 +11,25 @@ const props = defineProps<{
 const disabled = computed(() => props.field.disabled?.(props.model, props.mode) ?? false)
 const options = ref<Option[]>(dictOptions(props.field.dict) ?? props.field.options ?? [])
 
-onMounted(async () => {
-  if (props.field.loadOptions) {
-    options.value = await props.field.loadOptions()
-  }
-})
+const dependsOn = props.field.dependsOn
+
+async function loadOptions() {
+  if (!props.field.loadOptions) return
+  options.value = (await props.field.loadOptions(props.model)) ?? []
+}
+
+onMounted(loadOptions)
+
+// 依赖字段（如「接收范围」）变化时重载选项，并清掉旧选择
+if (dependsOn) {
+  watch(
+    () => props.model[dependsOn],
+    async () => {
+      props.model[props.field.prop] = props.field.multiple ? [] : undefined
+      await loadOptions()
+    }
+  )
+}
 </script>
 
 <template>

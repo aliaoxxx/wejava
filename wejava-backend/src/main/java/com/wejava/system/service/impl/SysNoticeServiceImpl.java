@@ -12,6 +12,7 @@ import com.wejava.system.model.form.SysNoticeForm;
 import com.wejava.system.model.query.SysNoticeQuery;
 import com.wejava.system.model.vo.SysNoticeVO;
 import com.wejava.system.service.MessageService;
+import com.wejava.system.service.MessageTargetResolver;
 import com.wejava.system.service.SysNoticeService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class SysNoticeServiceImpl implements SysNoticeService {
     private final SysNoticeMapper noticeMapper;
     private final SysNoticeConverter converter;
     private final MessageService messageService;
+    private final MessageTargetResolver targetResolver;
 
     @Override
     public PageResult<SysNoticeVO> page(SysNoticeQuery query) {
@@ -52,6 +54,7 @@ public class SysNoticeServiceImpl implements SysNoticeService {
     @Transactional(rollbackFor = Exception.class)
     public Long create(SysNoticeForm form) {
         SysNotice entity = converter.toEntity(form);
+        entity.setTargetIds(joinTargetIds(form));
         entity.setNoticeId(null);
         if (entity.getNoticeType() == null) {
             entity.setNoticeType(1);
@@ -70,6 +73,7 @@ public class SysNoticeServiceImpl implements SysNoticeService {
         SysNotice entity = requireNotice(form.getNoticeId());
         boolean wasPublished = Integer.valueOf(0).equals(entity.getStatus());
         converter.update(form, entity);
+        entity.setTargetIds(joinTargetIds(form));
         noticeMapper.updateById(entity);
         deliverIfPublished(entity, !wasPublished);
     }
@@ -85,13 +89,37 @@ public class SysNoticeServiceImpl implements SysNoticeService {
         if (!shouldDeliver || !Integer.valueOf(0).equals(notice.getStatus())) {
             return;
         }
-        messageService.deliverToAll(
+        int targetType = notice.getTargetType() == null ? MessageTargetResolver.TARGET_ALL : notice.getTargetType();
+        var userIds = targetResolver.resolve(targetType, parseTargetIds(notice.getTargetIds()));
+        if (userIds.isEmpty()) {
+            return;
+        }
+        messageService.deliver(
                 notice.getNoticeTitle(),
                 notice.getNoticeContent(),
                 1,
                 notificationLevel(notice.getNoticeType()),
                 "/system/notice",
-                notice.getNoticeId());
+                notice.getNoticeId(),
+                userIds);
+    }
+
+    private String joinTargetIds(SysNoticeForm form) {
+        if (form.getTargetIds() == null || form.getTargetIds().isEmpty()) {
+            return null;
+        }
+        return form.getTargetIds().stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+    }
+
+    private java.util.List<Long> parseTargetIds(String targetIds) {
+        if (targetIds == null || targetIds.isBlank()) {
+            return java.util.List.of();
+        }
+        return java.util.Arrays.stream(targetIds.split(","))
+                .map(String::trim)
+                .filter(text -> !text.isEmpty())
+                .map(Long::valueOf)
+                .toList();
     }
 
     private int notificationLevel(Integer noticeType) {

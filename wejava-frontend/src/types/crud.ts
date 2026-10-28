@@ -60,7 +60,10 @@ export interface FormField {
   /** 字典类型，优先级高于 options */
   dict?: Option[] | string
   /** 异步加载选项（如角色列表） */
-  loadOptions?: () => Promise<Option[]>
+  /** 动态加载选项；入参为当前表单模型，便于按其他字段联动 */
+  loadOptions?: (model?: Record<string, any>) => Promise<Option[]>
+  /** 依赖的字段名，变化时重新加载选项并清空已选 */
+  dependsOn?: string
   /** select 是否多选 */
   multiple?: boolean
   placeholder?: string
