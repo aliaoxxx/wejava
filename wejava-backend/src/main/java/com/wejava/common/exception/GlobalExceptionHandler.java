@@ -41,9 +41,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Void> handleValid(MethodArgumentNotValidException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();
-        String msg = fieldError == null
-                ? ErrorCode.BAD_REQUEST.getMessage()
-                : fieldError.getDefaultMessage();
+        String msg = fieldError == null ? ErrorCode.BAD_REQUEST.getMessage() : fieldError.getDefaultMessage();
         return R.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
     }
 
@@ -51,9 +49,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Void> handleBind(BindException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();
-        String msg = fieldError == null
-                ? ErrorCode.BAD_REQUEST.getMessage()
-                : fieldError.getDefaultMessage();
+        String msg = fieldError == null ? ErrorCode.BAD_REQUEST.getMessage() : fieldError.getDefaultMessage();
         return R.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
     }
 

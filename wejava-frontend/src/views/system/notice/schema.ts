@@ -33,15 +33,15 @@ export const noticeSchema: CrudSchema = {
   columns: [
     { prop: 'noticeId', label: '公告ID', width: 180 },
     { prop: 'noticeTitle', label: '标题', minWidth: 200 },
-    { prop: 'noticeType', label: '类型', width: 100, dict: NOTICE_TYPE, align: 'center' },
-    { prop: 'status', label: '状态', width: 90, dict: STATUS, align: 'center' },
+    { prop: 'noticeType', label: '类型', width: 100, dict: 'sys_notice_type', align: 'center' },
+    { prop: 'status', label: '状态', width: 90, dict: 'sys_normal_disable', align: 'center' },
     { prop: 'createTime', label: '创建时间', width: 170, dateFormat: 'YYYY-MM-DD HH:mm:ss' }
   ],
 
   form: [
     { prop: 'noticeTitle', label: '标题', type: 'input', required: true },
-    { prop: 'noticeType', label: '类型', type: 'select', options: NOTICE_TYPE, defaultValue: 1, span: 12 },
-    { prop: 'status', label: '状态', type: 'select', options: STATUS, defaultValue: 0, span: 12 },
+    { prop: 'noticeType', label: '类型', type: 'select', dict: 'sys_notice_type', defaultValue: 1, span: 12 },
+    { prop: 'status', label: '状态', type: 'select', dict: 'sys_normal_disable', defaultValue: 0, span: 12 },
     { prop: 'noticeContent', label: '内容', type: 'textarea', placeholder: '支持纯文本' }
   ]
 }

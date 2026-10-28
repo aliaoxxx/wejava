@@ -26,6 +26,8 @@ export interface SearchField {
   type: 'input' | 'select' | 'date' | 'daterange' | 'number'
   placeholder?: string
   options?: Option[]
+  /** 字典类型，优先级高于 options */
+  dict?: Option[] | string
   span?: number
 }
 
@@ -37,8 +39,8 @@ export interface Column<T = any> {
   align?: 'left' | 'center' | 'right'
   fixed?: 'left' | 'right'
   sortable?: boolean
-  /** 直接给选项，按 el-tag 渲染 */
-  dict?: Option[]
+  /** 选项数组，或字典类型字符串（运行时从 /system/dict/data/type/{type} 加载） */
+  dict?: Option[] | string
   /** 日期格式化，如 YYYY-MM-DD HH:mm:ss */
   dateFormat?: string
   /** 完全自定义渲染 */
@@ -53,6 +55,8 @@ export interface FormField {
   required?: boolean
   rules?: any[]
   options?: Option[]
+  /** 字典类型，优先级高于 options */
+  dict?: Option[] | string
   /** 异步加载选项（如角色列表） */
   loadOptions?: () => Promise<Option[]>
   /** select 是否多选 */

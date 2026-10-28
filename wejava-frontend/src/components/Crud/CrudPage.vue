@@ -3,6 +3,7 @@ import CrudSearch from './CrudSearch.vue'
 import CrudTable from './CrudTable.vue'
 import CrudForm from './CrudForm.vue'
 import { hasPerm } from '@/utils/permission'
+import { loadSchemaDicts } from '@/hooks/useDict'
 
 import type { CrudInstance } from '@/hooks/useCrud'
 
@@ -11,6 +12,11 @@ const schema = props.crud.schema
 const prefix: string | undefined = schema.permissionPrefix
 
 const canAdd = computed(() => !prefix || hasPerm(`${prefix}:add`))
+
+// 列和表单里用到的字典类型，进入页面时统一加载
+onMounted(() => {
+  loadSchemaDicts([...(schema.columns ?? []), ...(schema.form ?? [])] as any)
+})
 const formRef = ref()
 
 async function handleSubmit() {

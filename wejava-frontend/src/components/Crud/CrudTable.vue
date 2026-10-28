@@ -2,6 +2,7 @@
 import dayjs from 'dayjs'
 import { hasPerm } from '@/utils/permission'
 import type { Column, CrudSchema } from '@/types/crud'
+import { dictOptions } from '@/hooks/useDict'
 
 const props = defineProps<{
   schema: CrudSchema
@@ -29,7 +30,7 @@ function display(row: any, col: Column) {
 
 function dictLabel(row: any, col: Column) {
   const value = row[col.prop]
-  return col.dict?.find((item) => String(item.value) === String(value))?.label ?? value
+  return dictOptions(col.dict)?.find((item) => String(item.value) === String(value))?.label ?? value
 }
 </script>
 

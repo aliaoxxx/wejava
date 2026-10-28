@@ -13,8 +13,6 @@ public class ProfilePasswordForm {
 
     @NotBlank(message = "新密码不能为空")
     @Size(min = 6, max = 32, message = "新密码长度需在 6~32 之间")
-    @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
-            message = "新密码必须同时包含字母和数字")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "新密码必须同时包含字母和数字")
     private String newPassword;
 }

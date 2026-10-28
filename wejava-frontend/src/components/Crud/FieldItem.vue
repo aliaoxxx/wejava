@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormField, Option } from '@/types/crud'
+import { dictOptions } from '@/hooks/useDict'
 
 const props = defineProps<{
   field: FormField
@@ -8,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const disabled = computed(() => props.field.disabled?.(props.model, props.mode) ?? false)
-const options = ref<Option[]>(props.field.options ?? [])
+const options = ref<Option[]>(dictOptions(props.field.dict) ?? props.field.options ?? [])
 
 onMounted(async () => {
   if (props.field.loadOptions) {
