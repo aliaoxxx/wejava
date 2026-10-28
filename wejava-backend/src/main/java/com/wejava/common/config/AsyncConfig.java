@@ -1,6 +1,7 @@
 package com.wejava.common.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableScheduling
 public class AsyncConfig {
 
+    /** AI 流式对话专用线程池：每个进行中的对话占一个线程 */
+    public static final String AI_EXECUTOR = "aiExecutor";
+
     public static final String LOGIN_LOG_EXECUTOR = "loginLogExecutor";
 
     @Bean(LOGIN_LOG_EXECUTOR)
@@ -29,5 +33,21 @@ public class AsyncConfig {
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         executor.initialize();
         return executor;
+    }
+
+    @Bean(AI_EXECUTOR)
+    public ExecutorService aiExecutor() {
+        return new ThreadPoolExecutor(
+                4,
+                32,
+                60L,
+                java.util.concurrent.TimeUnit.SECONDS,
+                new java.util.concurrent.LinkedBlockingQueue<>(200),
+                runnable -> {
+                    Thread thread = new Thread(runnable, "ai-stream");
+                    thread.setDaemon(true);
+                    return thread;
+                },
+                new ThreadPoolExecutor.AbortPolicy());
     }
 }

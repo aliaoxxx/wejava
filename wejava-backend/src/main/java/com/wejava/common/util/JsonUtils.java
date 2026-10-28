@@ -13,6 +13,10 @@ public class JsonUtils {
 
     private final JsonMapper jsonMapper;
 
+    public <T> T fromJson(String json, Class<T> type) {
+        return jsonMapper.readValue(json, type);
+    }
+
     public String toJson(Object value) {
         if (value == null) {
             return "null";
