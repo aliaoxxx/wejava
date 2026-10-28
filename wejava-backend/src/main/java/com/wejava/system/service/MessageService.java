@@ -20,6 +20,9 @@ public interface MessageService {
 
     void markAllRead(Long userId);
 
+    /** 后台发送：按接收范围解析用户后投递 */
+    Long send(com.wejava.system.model.form.MessageSendForm form);
+
     /** 投递给指定用户 */
     Long deliver(String title, String content, int msgType, int level, String link, Long sourceId, List<Long> userIds);
 

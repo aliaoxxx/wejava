@@ -13,9 +13,11 @@ import com.wejava.system.mapper.SysUserMapper;
 import com.wejava.system.model.entity.SysMessage;
 import com.wejava.system.model.entity.SysMessageUser;
 import com.wejava.system.model.entity.SysUser;
+import com.wejava.system.model.form.MessageSendForm;
 import com.wejava.system.model.query.MessageQuery;
 import com.wejava.system.model.vo.MessageVO;
 import com.wejava.system.service.MessageService;
+import com.wejava.system.service.MessageTargetResolver;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ public class MessageServiceImpl implements MessageService {
     private final SysMessageUserMapper messageUserMapper;
     private final SysUserMapper userMapper;
     private final SseHub sseHub;
+    private final MessageTargetResolver targetResolver;
 
     @Override
     public long unreadCount(Long userId) {
@@ -85,6 +88,18 @@ public class MessageServiceImpl implements MessageService {
                         .eq(SysMessageUser::getReadFlag, 0)
                         .set(SysMessageUser::getReadFlag, 1)
                         .set(SysMessageUser::getReadTime, LocalDateTime.now()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long send(MessageSendForm form) {
+        int type = form.getMsgType() == null ? 2 : form.getMsgType();
+        int level = form.getLevel() == null ? 0 : form.getLevel();
+        var userIds = targetResolver.resolve(form.getTargetType(), form.getTargetIds());
+        if (userIds.isEmpty()) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "该范围内没有可接收的用户");
+        }
+        return deliver(form.getTitle(), form.getContent(), type, level, form.getLink(), null, userIds);
     }
 
     @Override

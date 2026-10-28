@@ -15,6 +15,12 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface SysUserMapper extends BaseMapper<SysUser> {
 
+    /** 某个角色下的启用用户 */
+    List<Long> selectUserIdsByRoleId(@Param("roleId") Long roleId);
+
+    /** 部门（含子部门）下的启用用户，deptId 用 FIND_IN_SET 匹配 ancestors */
+    List<Long> selectUserIdsByDeptId(@Param("deptId") Long deptId);
+
     /** 分页查询（关联部门名称） */
     IPage<SysUserVO> selectUserPage(IPage<SysUserVO> page, @Param("q") SysUserQuery query);
 

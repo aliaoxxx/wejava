@@ -95,4 +95,22 @@
         </foreach>
     </insert>
 
+    <select id="selectUserIdsByRoleId" resultType="java.lang.Long">
+        SELECT u.user_id
+          FROM sys_user u
+          JOIN sys_user_role ur ON ur.user_id = u.user_id
+         WHERE ur.role_id = #{roleId}
+           AND u.status = 0
+           AND u.del_flag = 0
+    </select>
+
+    <select id="selectUserIdsByDeptId" resultType="java.lang.Long">
+        SELECT u.user_id
+          FROM sys_user u
+          JOIN sys_dept d ON d.dept_id = u.dept_id
+         WHERE u.status = 0
+           AND u.del_flag = 0
+           AND (d.dept_id = #{deptId} OR FIND_IN_SET(#{deptId}, d.ancestors))
+    </select>
+
 </mapper>

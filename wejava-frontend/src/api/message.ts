@@ -24,3 +24,8 @@ export function markAllMessageRead() {
 export function getSseTicket() {
   return request.post<any, any>('/auth/sse-ticket')
 }
+
+/** 后台发送消息（按范围投递） */
+export function sendMessage(data: any) {
+  return request.post<any, any>('/system/message/send', data)
+}

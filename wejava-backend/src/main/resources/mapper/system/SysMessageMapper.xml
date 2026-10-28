@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wejava.system.mapper.SysMessageMapper">
+
+    <!-- 收件箱记录清理后，删除已经没有任何接收人的消息本体 -->
+    <delete id="deleteOrphanMessages">
+        DELETE FROM sys_message
+         WHERE create_time &lt; #{before}
+           AND NOT EXISTS (
+               SELECT 1 FROM sys_message_user u WHERE u.message_id = sys_message.message_id
+           )
+    </delete>
+
+</mapper>
