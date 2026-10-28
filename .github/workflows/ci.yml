@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同一个分支的新提交会取消旧任务，避免堆积
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend · Java 17
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wejava-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      - name: 代码格式检查
+        run: mvn -B -ntp spotless:check
+
+      - name: 编译与测试
+        run: mvn -B -ntp test
+
+      - name: 打包 WAR
+        run: mvn -B -ntp package -Pprod -DskipTests
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-war
+          path: "wejava-backend/target/prod#api.war"
+          retention-days: 7
+
+  frontend:
+    name: Frontend · Node 20
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wejava-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: wejava-frontend/pnpm-lock.yaml
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 类型检查与构建
+        run: pnpm build
