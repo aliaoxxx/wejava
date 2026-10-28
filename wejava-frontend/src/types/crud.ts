@@ -28,6 +28,8 @@ export interface SearchField {
   options?: Option[]
   /** 字典类型，优先级高于 options */
   dict?: Option[] | string
+  /** daterange 拆成的两个后端参数名，如 ['beginTime', 'endTime'] */
+  rangeKeys?: [string, string]
   span?: number
 }
 

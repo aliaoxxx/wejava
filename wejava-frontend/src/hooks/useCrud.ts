@@ -30,6 +30,14 @@ export function useCrud(schema: CrudSchema) {
       const value = source[key]
       if (value === '' || value === null || value === undefined) return
       if (Array.isArray(value) && value.length === 0) return
+
+      // 日期区间：拆成后端需要的两个参数，如 [beginTime, endTime]
+      const field = schema.search?.find((item) => item.prop === key)
+      if (field?.rangeKeys && Array.isArray(value) && value.length === 2) {
+        params[field.rangeKeys[0]] = value[0]
+        params[field.rangeKeys[1]] = value[1]
+        return
+      }
       params[key] = value
     })
     return params

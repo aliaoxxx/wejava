@@ -1,30 +1,11 @@
 <script setup lang="ts">
 import type { AppRoute } from '@/router/transform'
+import { resolveIcon } from '@/utils/icon'
 
 defineProps<{ item: AppRoute; basePath?: string }>()
 
-/** 后端菜单里的图标名（RuoYi 风格）→ Element Plus 图标组件名 */
-const ICON_MAP: Record<string, string> = {
-  setting: 'Setting',
-  user: 'User',
-  peoples: 'UserFilled',
-  'tree-table': 'Grid',
-  tree: 'Share',
-  post: 'Postcard',
-  dict: 'Collection',
-  edit: 'Edit',
-  message: 'Message',
-  monitor: 'Monitor',
-  online: 'Connection',
-  form: 'Document',
-  logininfor: 'Key',
-  server: 'Cpu'
-}
-
 function iconOf(item: AppRoute): string {
-  const icon = item.meta?.icon as string | undefined
-  if (icon && ICON_MAP[icon]) return ICON_MAP[icon]
-  return item.children?.length ? 'Folder' : 'Document'
+  return resolveIcon(item.meta?.icon as string | undefined, item.children?.length ? 'Folder' : 'Document')
 }
 </script>
 

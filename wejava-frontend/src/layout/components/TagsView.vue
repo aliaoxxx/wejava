@@ -35,20 +35,26 @@ function handleCommand(command: string) {
 
 <template>
   <div class="tags-view">
-    <el-scrollbar>
+    <el-scrollbar class="tags-scroll">
       <div class="tags-inner">
-        <el-tag
+        <div
           v-for="tag in tagsStore.visited"
           :key="tag.path"
-          :effect="isActive(tag.path) ? 'dark' : 'plain'"
-          :closable="!tag.affix"
-          size="small"
           class="tag-item"
+          :class="{ active: isActive(tag.path) }"
           @click="handleClick(tag.fullPath)"
-          @close="handleClose(tag.path)"
         >
-          {{ tag.title }}
-        </el-tag>
+          <el-icon v-if="tag.icon" class="tag-icon"><component :is="tag.icon" /></el-icon>
+          <span class="tag-title">{{ tag.title }}</span>
+          <el-icon
+            v-if="!tag.affix"
+            class="tag-close"
+            :class="{ always: isActive(tag.path) }"
+            @click.stop="handleClose(tag.path)"
+          >
+            <Close />
+          </el-icon>
+        </div>
       </div>
     </el-scrollbar>
 
@@ -70,22 +76,82 @@ function handleCommand(command: string) {
 .tags-view {
   display: flex;
   align-items: center;
-  height: 34px;
-  padding: 0 8px;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
   background: var(--app-header-bg);
   border-bottom: 1px solid var(--app-border);
   transition: background-color 0.25s;
 }
+
+.tags-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .tags-inner {
   display: flex;
-  gap: 6px;
-  padding: 4px 0;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
   white-space: nowrap;
 }
+
 .tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  font-size: 12px;
+  line-height: 1;
   cursor: pointer;
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  color: var(--el-text-color-regular);
+  background: transparent;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background-color 0.15s;
 }
+
+.tag-item:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary-light-5);
+}
+
+.tag-item.active {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+  font-weight: 500;
+}
+
+.tag-icon {
+  font-size: 13px;
+}
+
+.tag-close {
+  font-size: 12px;
+  border-radius: 50%;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+}
+
+.tag-item:hover .tag-close,
+.tag-close.always {
+  opacity: 1;
+}
+
+.tag-close:hover {
+  color: #fff;
+  background: var(--el-color-primary);
+}
+
 .tag-more {
-  margin-left: 8px;
+  flex: 0 0 auto;
 }
 </style>

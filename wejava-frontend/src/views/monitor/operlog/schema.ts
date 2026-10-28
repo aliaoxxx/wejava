@@ -28,6 +28,12 @@ export const operLogSchema: CrudSchema = {
   },
 
   search: [
+    {
+      prop: 'timeRange',
+      label: '操作时间',
+      type: 'daterange',
+      rangeKeys: ['beginTime', 'endTime']
+    },
     { prop: 'title', label: '模块', type: 'input' },
     { prop: 'operName', label: '操作人', type: 'input' },
     { prop: 'businessType', label: '类型', type: 'select', options: BUSINESS },

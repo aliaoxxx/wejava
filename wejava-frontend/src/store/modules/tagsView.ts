@@ -1,16 +1,18 @@
 import { defineStore } from 'pinia'
 import type { RouteLocationNormalized } from 'vue-router'
+import { resolveIcon } from '@/utils/icon'
 
 export interface TagView {
   path: string
   fullPath: string
   title: string
+  icon?: string
   affix?: boolean
 }
 
 export const useTagsViewStore = defineStore('tagsView', () => {
   const visited = ref<TagView[]>([
-    { path: '/dashboard', fullPath: '/dashboard', title: '首页', affix: true }
+    { path: '/dashboard', fullPath: '/dashboard', title: '首页', icon: 'HomeFilled', affix: true }
   ])
 
   const cached = computed(() => visited.value.map((item) => item.path))
@@ -26,7 +28,8 @@ export const useTagsViewStore = defineStore('tagsView', () => {
     visited.value.push({
       path: route.path,
       fullPath: route.fullPath,
-      title: (route.meta?.title as string) || route.name?.toString() || route.path
+      title: (route.meta?.title as string) || route.name?.toString() || route.path,
+      icon: resolveIcon(route.meta?.icon as string | undefined)
     })
   }
 
