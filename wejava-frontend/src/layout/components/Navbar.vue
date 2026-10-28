@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/store/modules/app'
 import { useUserStore } from '@/store/modules/user'
 import ThemeSwitcher from './ThemeSwitcher.vue'
+import NotificationBell from './NotificationBell.vue'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -30,6 +31,7 @@ async function handleCommand(command: string) {
     <span class="page-title">{{ route.meta.title }}</span>
   </div>
   <div class="right">
+    <NotificationBell />
     <ThemeSwitcher class="theme-slot" />
     <el-dropdown @command="handleCommand">
       <span class="user-info">
