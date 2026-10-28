@@ -80,6 +80,12 @@ public class SysRoleController {
         return R.ok();
     }
 
+    @PreAuthorize("@ps.has('system:role:query')")
+    @GetMapping("/{roleId}/dept-ids")
+    public R<List<Long>> deptIds(@PathVariable Long roleId) {
+        return R.ok(roleService.listDeptIds(roleId));
+    }
+
     @PreAuthorize("@ps.has('system:role:dataScope')")
     @PutMapping("/data-scope")
     public R<Void> dataScope(@RequestBody @Valid DataScopeForm form) {

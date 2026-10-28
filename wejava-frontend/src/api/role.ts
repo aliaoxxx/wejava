@@ -23,3 +23,11 @@ export function updateRole(data: any) {
 export function removeRole(ids: string) {
   return request.delete<any, any>(`/system/role/${ids}`)
 }
+
+export function getRoleDeptIds(roleId: string | number) {
+  return request.get<any, any>(`/system/role/${roleId}/dept-ids`)
+}
+
+export function updateRoleDataScope(data: any) {
+  return request.put<any, any>('/system/role/data-scope', data)
+}

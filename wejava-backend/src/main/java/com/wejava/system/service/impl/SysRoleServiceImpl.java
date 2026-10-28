@@ -157,6 +157,11 @@ public class SysRoleServiceImpl implements SysRoleService {
         }
     }
 
+    @Override
+    public List<Long> listDeptIds(Long roleId) {
+        return roleMapper.selectDeptIdsByRoleId(roleId);
+    }
+
     private SysRole requireRole(Long roleId) {
         SysRole role = roleMapper.selectById(roleId);
         if (role == null) {

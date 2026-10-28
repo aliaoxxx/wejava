@@ -29,4 +29,7 @@ public interface SysRoleService {
     void changeStatus(Long roleId, Integer status);
 
     void updateDataScope(DataScopeForm form);
+
+    /** 角色已勾选的部门 ID */
+    java.util.List<Long> listDeptIds(Long roleId);
 }
