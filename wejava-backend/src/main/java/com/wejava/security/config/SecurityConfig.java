@@ -30,7 +30,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     /** 免认证白名单（不含 context-path /api） */
-    private static final String[] WHITELIST = {"/auth/login", "/auth/refresh", "/auth/captcha", "/ping", "/error"};
+    // /stream/** 用一次性票据鉴权（EventSource 无法带请求头），因此不走 JWT 过滤器
+    private static final String[] WHITELIST = {
+        "/auth/login", "/auth/refresh", "/auth/captcha", "/ping", "/error", "/stream/**"
+    };
 
     private final RestAuthEntryPoint authEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;

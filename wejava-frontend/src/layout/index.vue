@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import { useMessageStore } from '@/store/modules/message'
+import { createNotificationStream } from '@/utils/sse'
 
 const messageStore = useMessageStore()
-let unreadTimer: ReturnType<typeof setInterval> | undefined
+
+// SSE 实时通知：收到新消息事件后刷新未读数与列表
+const stream = createNotificationStream({
+  onConnected: () => messageStore.refreshUnread(),
+  onMessage: () => {
+    messageStore.refreshUnread()
+    messageStore.fetchRecent()
+  }
+})
 
 onMounted(() => {
   messageStore.refreshUnread()
-  // 60 秒轮询未读数；后续要实时可换成 SSE
-  unreadTimer = setInterval(() => messageStore.refreshUnread(), 60000)
+  stream.connect()
 })
 
-onBeforeUnmount(() => {
-  if (unreadTimer) clearInterval(unreadTimer)
-})
+onBeforeUnmount(() => stream.close())
 import Sidebar from './components/Sidebar.vue'
 import Navbar from './components/Navbar.vue'
 import AppMain from './components/AppMain.vue'

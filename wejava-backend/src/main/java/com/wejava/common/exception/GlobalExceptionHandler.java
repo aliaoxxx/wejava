@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
     public R<Void> handleRateLimit(RateLimitException e) {
         return R.fail(ErrorCode.TOO_MANY_REQUESTS.getCode(), e.getMessage());
+    }
+
+    /** 保留原始 HTTP 状态（如 SSE 票据无效返回 401） */
+    @ExceptionHandler(ResponseStatusException.class)
+    public org.springframework.http.ResponseEntity<R<Void>> handleResponseStatus(ResponseStatusException e) {
+        return org.springframework.http.ResponseEntity.status(e.getStatusCode())
+                .body(R.fail(e.getStatusCode().value(), e.getReason() == null ? "请求失败" : e.getReason()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

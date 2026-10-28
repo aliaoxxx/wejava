@@ -19,3 +19,8 @@ export function markMessageRead(messageId: string | number) {
 export function markAllMessageRead() {
   return request.put<any, any>('/system/message/read-all')
 }
+
+/** 换取 SSE 一次性票据（30 秒有效） */
+export function getSseTicket() {
+  return request.post<any, any>('/auth/sse-ticket')
+}

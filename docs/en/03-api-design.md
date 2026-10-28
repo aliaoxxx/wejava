@@ -487,6 +487,7 @@ Path prefix `/system/dept`
 
 ## 10. Monitoring Endpoints
 
+
 ### 10.1 Online Users `/monitor/online`
 
 | Method | Path | Permission | Description |
@@ -621,3 +622,64 @@ public class SysUserController {
     public R<PageResult<UserVO>> list(UserQuery query) { ... }
 }
 ```
+
+---
+
+## 14. SSE Real-time Channel
+
+Messages are pushed over SSE. `EventSource` cannot send request headers,
+so the connection is authenticated with a **one-time ticket**.
+
+| Step | Endpoint | Notes |
+|---|---|---|
+| 1 | `POST /auth/sse-ticket` | Requires Bearer auth, returns `{ ticket, expiresIn }` |
+| 2 | `GET /stream/notifications?ticket=xxx` | Opens the stream; the ticket is valid for 30s and consumed once |
+
+### Event Format
+
+```
+event:connected
+data:{"userId":"1"}
+
+event:message
+data:{"messageId":"5","title":"...","msgType":1,"level":0}
+
+:ping
+
+```
+
+| event | When | data |
+|---|---|---|
+| `connected` | Connection established | `{ userId }` |
+| `message` | A notice or system message was delivered | message summary |
+| `unread` | Unread count changed | `{ count }` |
+| Comment `:ping` | Every 15s | Keeps idle connections from being dropped by proxies |
+
+### Transport Requirements
+
+```
+Content-Type: text/event-stream; charset=utf-8
+Cache-Control: no-cache, no-transform
+X-Accel-Buffering: no
+```
+
+Buffering must be disabled behind Nginx, otherwise events are held back:
+
+```nginx
+location /prod/api/stream/ {
+    proxy_pass http://127.0.0.1:8080/prod/api/stream/;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 3600s;
+}
+```
+
+### Multiple Instances
+
+`SseEmitter` lives in a single JVM, so with several replicas a message may be delivered
+to the wrong node. Delivery always goes through Redis Pub/Sub (`admin:sse:user:{userId}`);
+each instance forwards only to its own live connections. Broadcasts carry a `from`
+instance id so an instance never consumes its own message and double-delivers.
+
+---
+

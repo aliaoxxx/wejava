@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wejava.common.core.PageResult;
 import com.wejava.common.exception.BizException;
 import com.wejava.common.exception.ErrorCode;
+import com.wejava.common.sse.SseEventType;
+import com.wejava.common.sse.SseHub;
 import com.wejava.system.mapper.SysMessageMapper;
 import com.wejava.system.mapper.SysMessageUserMapper;
 import com.wejava.system.mapper.SysUserMapper;
@@ -16,6 +18,7 @@ import com.wejava.system.model.vo.MessageVO;
 import com.wejava.system.service.MessageService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ public class MessageServiceImpl implements MessageService {
     private final SysMessageMapper messageMapper;
     private final SysMessageUserMapper messageUserMapper;
     private final SysUserMapper userMapper;
+    private final SseHub sseHub;
 
     @Override
     public long unreadCount(Long userId) {
@@ -101,6 +105,16 @@ public class MessageServiceImpl implements MessageService {
         messageMapper.insert(message);
 
         messageUserMapper.insertRecipients(message.getMessageId(), userIds);
+
+        // 推送给在线用户；未在线的靠下次拉取补上
+        sseHub.sendToUsers(
+                userIds,
+                SseEventType.MESSAGE,
+                Map.of(
+                        "messageId", String.valueOf(message.getMessageId()),
+                        "title", message.getTitle(),
+                        "msgType", message.getMsgType(),
+                        "level", message.getLevel()));
         return message.getMessageId();
     }
 
