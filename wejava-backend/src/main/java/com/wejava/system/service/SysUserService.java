@@ -27,5 +27,11 @@ public interface SysUserService {
 
     void resetPassword(Long userId, String password);
 
+    /** 修改自己的密码（校验原密码），成功后强制下线 */
+    void changeOwnPassword(com.wejava.system.model.form.ProfilePasswordForm form);
+
+    /** 修改自己的资料（昵称 / 手机 / 邮箱） */
+    void updateOwnProfile(com.wejava.system.model.form.ProfileUpdateForm form);
+
     void changeStatus(Long userId, Integer status);
 }

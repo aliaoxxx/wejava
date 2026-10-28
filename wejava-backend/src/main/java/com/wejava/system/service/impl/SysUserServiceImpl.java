@@ -10,8 +10,12 @@ import com.wejava.common.exception.ErrorCode;
 import com.wejava.security.SecurityUtils;
 import com.wejava.security.jwt.SessionStore;
 import com.wejava.system.converter.SysUserConverter;
+import com.wejava.system.mapper.SysDeptMapper;
 import com.wejava.system.mapper.SysUserMapper;
+import com.wejava.system.model.entity.SysDept;
 import com.wejava.system.model.entity.SysUser;
+import com.wejava.system.model.form.ProfilePasswordForm;
+import com.wejava.system.model.form.ProfileUpdateForm;
 import com.wejava.system.model.form.SysUserCreateForm;
 import com.wejava.system.model.form.SysUserUpdateForm;
 import com.wejava.system.model.query.SysUserQuery;
@@ -38,6 +42,7 @@ public class SysUserServiceImpl implements SysUserService {
     private static final long SUPER_ADMIN_ID = 1L;
 
     private final SysUserMapper userMapper;
+    private final SysDeptMapper deptMapper;
     private final SysUserConverter converter;
     private final PasswordEncoder passwordEncoder;
     private final SessionStore sessionStore;
@@ -62,6 +67,10 @@ public class SysUserServiceImpl implements SysUserService {
         SysUser user = requireUser(userId);
         SysUserVO vo = converter.toVO(user);
         vo.setRoleIds(userMapper.selectRoleIdsByUserId(userId));
+        if (user.getDeptId() != null) {
+            SysDept dept = deptMapper.selectById(user.getDeptId());
+            vo.setDeptName(dept == null ? null : dept.getDeptName());
+        }
         return vo;
     }
 
@@ -161,6 +170,48 @@ public class SysUserServiceImpl implements SysUserService {
         if (Integer.valueOf(1).equals(status)) {
             sessionStore.kickUser(userId);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changeOwnPassword(ProfilePasswordForm form) {
+        Long userId = SecurityUtils.currentUserId();
+        if (userId == null) {
+            throw new BizException(ErrorCode.UNAUTHORIZED);
+        }
+        SysUser user = requireUser(userId);
+        if (!passwordEncoder.matches(form.getOldPassword(), user.getPassword())) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "原密码不正确");
+        }
+        if (form.getOldPassword().equals(form.getNewPassword())) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "新密码不能与原密码相同");
+        }
+
+        SysUser update = new SysUser();
+        update.setUserId(userId);
+        update.setPassword(passwordEncoder.encode(form.getNewPassword()));
+        update.setPwdUpdateTime(LocalDateTime.now());
+        userMapper.updateById(update);
+
+        // 改密后所有会话失效，需要重新登录
+        sessionStore.kickUser(userId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateOwnProfile(ProfileUpdateForm form) {
+        Long userId = SecurityUtils.currentUserId();
+        if (userId == null) {
+            throw new BizException(ErrorCode.UNAUTHORIZED);
+        }
+        requireUser(userId);
+
+        SysUser update = new SysUser();
+        update.setUserId(userId);
+        update.setNickname(form.getNickname());
+        update.setPhone(form.getPhone());
+        update.setEmail(form.getEmail());
+        userMapper.updateById(update);
     }
 
     private SysUser requireUser(Long userId) {

@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
         FieldError fieldError = e.getBindingResult().getFieldError();
         String msg = fieldError == null
                 ? ErrorCode.BAD_REQUEST.getMessage()
-                : fieldError.getField() + " " + fieldError.getDefaultMessage();
+                : fieldError.getDefaultMessage();
         return R.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
     }
 
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
         FieldError fieldError = e.getBindingResult().getFieldError();
         String msg = fieldError == null
                 ? ErrorCode.BAD_REQUEST.getMessage()
-                : fieldError.getField() + " " + fieldError.getDefaultMessage();
+                : fieldError.getDefaultMessage();
         return R.fail(ErrorCode.BAD_REQUEST.getCode(), msg);
     }
 

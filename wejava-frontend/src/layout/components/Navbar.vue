@@ -10,6 +10,10 @@ const route = useRoute()
 const router = useRouter()
 
 async function handleCommand(command: string) {
+  if (command === 'profile') {
+    await router.push('/profile')
+    return
+  }
   if (command === 'logout') {
     await userStore.logout()
     await router.push('/login')
@@ -34,7 +38,8 @@ async function handleCommand(command: string) {
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+          <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+          <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
