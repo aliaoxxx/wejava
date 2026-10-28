@@ -22,38 +22,56 @@
 ## 目录结构
 
 ```
-WeJavaAdmin/
-├── docs/                 设计文档（数据库 / 认证 / 接口 / 前端 / 规范 / 避坑）
+wejava/
+├── docs/                 设计文档（数据库 / 认证 / 接口 / 前端 / 规范 / 部署 / 避坑）
 ├── wejava-backend/       Java 后端（com.wejava）
-├── wejava-frontend/      Vue 前端
-├── docs/07-部署方案.md   生产/开发环境部署说明（WAR + Nginx）
+└── wejava-frontend/      Vue 前端
 ```
 
 ## 快速开始
 
-```bash
-# 1. 启动依赖（可选，若本机已有 MySQL/Redis 可跳过）
-docker compose up -d
+前置：本机已装 **JDK 17**、**Maven**、**Node 20+**、**pnpm**，并已有 **MySQL 8** 和 **Redis**。
 
-# 2. 后端（端口 8000，上下文 /api）
+```bash
+# 1. 建库（只需一次，表结构由 Flyway 自动迁移）
+mysql -uroot -p -e "CREATE DATABASE wejava DEFAULT CHARSET utf8mb4;"
+
+# 2. 后端：端口 8000，上下文 /dev/api
 cd wejava-backend
 mvn spring-boot:run
 
-# 3. 前端（端口 3300）
+# 3. 前端：http://localhost:3300/dev/
 cd wejava-frontend
 pnpm install && pnpm dev
 ```
 
+数据库与 Redis 连接默认走本机，可用环境变量覆盖：`DB_HOST` `DB_PORT` `DB_NAME` `DB_USER` `DB_PASSWORD` `REDIS_HOST` `REDIS_PORT` `REDIS_PASSWORD`。
+
 默认账号：`admin / admin123`（超级管理员）。
+
+> 首次 clone 后 `src/types/auto-imports.d.ts` 尚未生成，IDE 可能报类型错误，
+> 跑一次 `pnpm dev` 或 `pnpm build` 即会生成（该文件不入库）。
 
 ## 开发
 
 ```bash
 cd wejava-backend
-mvn spotless:apply     # 代码格式化（提交前必跑）
-mvn test               # 单元测试
-./scripts/verify-auth.sh   # 认证闭环验收（需 CAPTCHA_ENABLED=false 启动）
+mvn spotless:apply          # 代码格式化（提交前必跑）
+mvn test                    # 单元测试
+./scripts/verify-auth.sh    # 认证闭环验收 14 项（需 CAPTCHA_ENABLED=false 启动）
 ```
+
+## 构建与部署
+
+```bash
+# 后端：WAR（prod#api.war 部署到 Tomcat 后上下文为 /prod/api）
+mvn clean package -Pprod -DskipTests
+
+# 前端：base 为 /prod/，产物在 dist/
+pnpm build
+```
+
+完整方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（WAR + Nginx + 路径前缀 + 发版回滚）。
 
 ## 文档
 
