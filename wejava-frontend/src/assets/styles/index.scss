@@ -1,0 +1,145 @@
+:root {
+  --app-sidebar-bg: #304156;
+  --app-sidebar-text: #bfcbd9;
+  --app-header-bg: #ffffff;
+  --app-content-bg: #f5f7fa;
+  --app-border: #e4e7ed;
+}
+
+/* 界面动效：标准 / 轻快 / 关闭 —— 通过覆盖 Element Plus 的过渡时长实现 */
+:root {
+  --app-motion-duration: 0.3s;
+}
+html[data-motion='fast'] {
+  --app-motion-duration: 0.12s;
+}
+html[data-motion='none'] {
+  --app-motion-duration: 0s;
+  --el-transition-duration: 0s;
+  --el-transition-duration-fast: 0s;
+}
+
+/* 覆盖 Element Plus 内置的淡入淡出时长 */
+.el-fade-in-linear-enter-active,
+.el-fade-in-linear-leave-active,
+.el-fade-in-enter-active,
+.el-fade-in-leave-active,
+.el-zoom-in-top-enter-active,
+.el-zoom-in-top-leave-active {
+  transition-duration: var(--app-motion-duration) !important;
+}
+
+/* 关闭动效时，连我们的布局过渡也一起停掉 */
+html[data-motion='none'] *,
+html[data-motion='none'] *::before,
+html[data-motion='none'] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+html.dark {
+  /* 让原生滚动条、表单控件、选中态跟随暗色 */
+  color-scheme: dark;
+  --app-sidebar-bg: #1d1e1f;
+  --app-sidebar-text: #a3a6ad;
+  --app-header-bg: #141414;
+  --app-content-bg: #0a0a0a;
+  --app-border: #363637;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--app-content-bg);
+  color: var(--el-text-color-primary);
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.layout-container {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.layout-aside {
+  transition: width 0.2s;
+  background-color: var(--app-sidebar-bg);
+  overflow: hidden;
+}
+
+/* 侧边栏：logo 固定高度 + 菜单区自适应滚动 */
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  flex: 0 0 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.menu-scroll {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+/* 菜单配色交给 CSS 变量，明暗模式自动跟随 */
+.layout-aside .el-menu {
+  width: 100%;
+  border-right: none;
+  --el-menu-bg-color: var(--app-sidebar-bg);
+  --el-menu-text-color: var(--app-sidebar-text);
+  --el-menu-active-color: var(--el-color-primary);
+  --el-menu-hover-bg-color: rgba(255, 255, 255, 0.06);
+  --el-menu-hover-text-color: #ffffff;
+}
+
+.layout-aside .el-menu-item,
+.layout-aside .el-sub-menu__title {
+  display: flex;
+  align-items: center;
+}
+
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--app-header-bg);
+  border-bottom: 1px solid var(--app-border);
+  height: 50px;
+  padding: 0 16px;
+  transition: background-color 0.25s;
+}
+
+.layout-main {
+  padding: 16px;
+  background-color: var(--app-content-bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: background-color 0.25s;
+}

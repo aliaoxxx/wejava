@@ -1,0 +1,55 @@
+# ---------- 系统 ----------
+.DS_Store
+Thumbs.db
+
+# ---------- IDE ----------
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+*.swp
+
+# ---------- 日志 ----------
+*.log
+logs/
+/tmp/
+
+# ---------- 后端（Maven）----------
+wejava-backend/target/
+*.class
+*.jar
+*.war
+!**/wrapper/*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---------- 前端（Node）----------
+wejava-frontend/node_modules/
+# pnpm 本地仓库（本机把 store 放在了项目里，159MB，绝不能提交）
+.pnpm-store/
+.pnpm-debug.log
+*.tsbuildinfo
+wejava-frontend/dist/
+wejava-frontend/.vite/
+# unplugin 自动生成，首次 pnpm dev / build 时重建
+wejava-frontend/src/types/auto-imports.d.ts
+wejava-frontend/src/types/components.d.ts
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 本地覆盖配置 ----------
+.env.local
+.env.*.local
+application-local.yml
+application-local.yaml
+application-local.properties
+
+# ---------- 测试 / 临时产物 ----------
+.chrome-test/
+.home/
+coverage/
+*.hprof

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wejava.system.mapper.SysRoleMapper">
+
+    <select id="selectOptions" resultType="com.wejava.system.model.vo.RoleOptionVO">
+        SELECT role_id, role_name
+          FROM sys_role
+         WHERE del_flag = 0
+           AND status = 0
+         ORDER BY role_sort
+    </select>
+
+    <select id="selectMenuIdsByRoleId" resultType="java.lang.Long">
+        SELECT menu_id FROM sys_role_menu WHERE role_id = #{roleId}
+    </select>
+
+    <select id="selectDeptIdsByRoleId" resultType="java.lang.Long">
+        SELECT dept_id FROM sys_role_dept WHERE role_id = #{roleId}
+    </select>
+
+    <select id="countUsersByRoleId" resultType="int">
+        SELECT COUNT(*) FROM sys_user_role WHERE role_id = #{roleId}
+    </select>
+
+    <delete id="deleteRoleMenus">
+        DELETE FROM sys_role_menu WHERE role_id = #{roleId}
+    </delete>
+
+    <insert id="insertRoleMenus">
+        INSERT INTO sys_role_menu (role_id, menu_id) VALUES
+        <foreach collection="menuIds" item="menuId" separator=",">
+            (#{roleId}, #{menuId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteRoleDepts">
+        DELETE FROM sys_role_dept WHERE role_id = #{roleId}
+    </delete>
+
+    <insert id="insertRoleDepts">
+        INSERT INTO sys_role_dept (role_id, dept_id) VALUES
+        <foreach collection="deptIds" item="deptId" separator=",">
+            (#{roleId}, #{deptId})
+        </foreach>
+    </insert>
+
+    <update id="softDeleteRole">
+        UPDATE sys_role
+           SET del_flag = 1,
+               role_key = CONCAT(role_key, '#del_', role_id),
+               update_time = NOW(3)
+         WHERE role_id = #{roleId} AND del_flag = 0
+    </update>
+
+    <select id="selectRolesByUserId" resultType="com.wejava.system.model.entity.SysRole">
+        SELECT r.role_id, r.role_name, r.role_key, r.data_scope, r.status, r.del_flag
+          FROM sys_role r
+          JOIN sys_user_role ur ON ur.role_id = r.role_id
+         WHERE ur.user_id = #{userId}
+           AND r.status = 0
+           AND r.del_flag = 0
+    </select>
+
+</mapper>

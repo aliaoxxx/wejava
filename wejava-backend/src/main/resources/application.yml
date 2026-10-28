@@ -1,0 +1,45 @@
+server:
+  shutdown: graceful
+  forward-headers-strategy: native
+
+spring:
+  application:
+    name: wejava-backend
+  # 由 Maven profile 注入：-Pdev 或 -Pprod
+  profiles:
+    active: @profiles.active@
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id
+
+wejava:
+  auth:
+    issuer: wejava-admin
+    secret: ${JWT_SECRET:wejava-dev-secret-key-please-change-in-production}
+    access-ttl: 30m
+    refresh-ttl: 7d
+    captcha-enabled: ${CAPTCHA_ENABLED:true}
+    max-retry: 5
+    lock-minutes: 15
+    single-login: false
+    clock-skew: 60s
+  concurrency:
+    default-limit: 10
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{traceId:-}] %logger{36} - %msg%n"

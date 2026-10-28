@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wejava.system.mapper.SysUserMapper">
+
+    <resultMap id="SysUserVOMap" type="com.wejava.system.model.vo.SysUserVO">
+        <id property="userId" column="user_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="sex" column="sex"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 用户分页：关联部门名称。禁止 SELECT *，字段显式列出 -->
+    <select id="selectUserPage" resultMap="SysUserVOMap">
+        SELECT u.user_id, u.dept_id, d.dept_name, u.username, u.nickname,
+               u.email, u.phone, u.sex, u.status, u.remark, u.create_time
+          FROM sys_user u
+          LEFT JOIN sys_dept d ON d.dept_id = u.dept_id AND d.del_flag = 0
+         WHERE u.del_flag = 0
+        <if test="q.username != null and q.username != ''">
+            AND u.username LIKE CONCAT('%', #{q.username}, '%')
+        </if>
+        <if test="q.nickname != null and q.nickname != ''">
+            AND u.nickname LIKE CONCAT('%', #{q.nickname}, '%')
+        </if>
+        <if test="q.phone != null and q.phone != ''">
+            AND u.phone LIKE CONCAT('%', #{q.phone}, '%')
+        </if>
+        <if test="q.status != null">
+            AND u.status = #{q.status}
+        </if>
+        <if test="q.deptId != null">
+            AND u.dept_id IN (
+                SELECT dept_id FROM sys_dept
+                 WHERE dept_id = #{q.deptId} OR FIND_IN_SET(#{q.deptId}, ancestors)
+            )
+        </if>
+        <if test="q.beginTime != null">
+            AND u.create_time &gt;= #{q.beginTime}
+        </if>
+        <if test="q.endTime != null">
+            AND u.create_time &lt;= #{q.endTime}
+        </if>
+        ORDER BY u.create_time DESC
+    </select>
+
+    <select id="selectRoleIdsByUserId" resultType="java.lang.Long">
+        SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectPermsByUserId" resultType="java.lang.String">
+        SELECT DISTINCT m.perms
+          FROM sys_menu m
+          JOIN sys_role_menu rm ON rm.menu_id = m.menu_id
+          JOIN sys_user_role ur ON ur.role_id = rm.role_id
+         WHERE ur.user_id = #{userId}
+           AND m.status = 0
+           AND m.perms IS NOT NULL
+           AND m.perms &lt;&gt; ''
+    </select>
+
+    <select id="selectRoleKeysByUserId" resultType="java.lang.String">
+        SELECT r.role_key
+          FROM sys_role r
+          JOIN sys_user_role ur ON ur.role_id = r.role_id
+         WHERE ur.user_id = #{userId}
+           AND r.status = 0
+           AND r.del_flag = 0
+    </select>
+
+    <!-- 逻辑删除：同时改名，避免 uk_username 与已删除记录冲突 -->
+    <update id="softDeleteUser">
+        UPDATE sys_user
+           SET del_flag = 1,
+               username = CONCAT(username, '#del_', user_id),
+               update_time = NOW(3)
+         WHERE user_id = #{userId} AND del_flag = 0
+    </update>
+
+    <delete id="deleteUserRoles">
+        DELETE FROM sys_user_role WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertUserRoles">
+        INSERT INTO sys_user_role (user_id, role_id) VALUES
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId}, #{roleId})
+        </foreach>
+    </insert>
+
+</mapper>

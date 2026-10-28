@@ -1,0 +1,10 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# 本地环境配置，禁止提交
+.env
+application-local.yml
+
+# 构建产物
+*.jar
+*.war
