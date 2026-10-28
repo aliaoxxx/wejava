@@ -1,3 +1,5 @@
+[English](en/README.md) | 中文
+
 # WeJavaAdmin 设计文档
 
 一个基于 **Spring Boot 4.1 + Spring Security 7 + MyBatis-Plus + Vue 3** 的后台管理框架。
@@ -7,16 +9,16 @@
 
 ## 文档索引
 
-| 文档 | 内容 |
-|---|---|
-| [01-数据库设计](01-数据库设计.md) | 15 张表完整 DDL、索引、数据权限字段、初始化数据 |
-| [02-认证与权限设计](02-认证与权限设计.md) | 登录时序、Token 结构、Redis 规范、过滤器链、RBAC、数据权限 |
-| [03-接口设计](03-接口设计.md) | 统一返回体、错误码、全部接口清单、权限字符表 |
-| [04-前端设计](04-前端设计.md) | 目录结构、动态路由、axios 刷新队列、权限指令 |
-| [05-开发规范](05-开发规范.md) | 分层、命名、DTO/VO/Converter、分页、事务、MyBatis-Plus 与 XML 规范 |
-| [06-前端配置驱动设计](06-前端配置驱动设计.md) | CRUD Schema、useCrud、三层策略、落地顺序 |
-| [07-部署方案](07-部署方案.md) | WAR + Nginx 部署、路径前缀、发版回滚 |
-| [避坑清单](避坑清单.md) | 上线前逐条核对的风险项 |
+| 文档 | 内容 | English |
+|---|---|---|
+| [01-数据库设计](01-数据库设计.md) | 15 张表完整 DDL、索引、数据权限字段、初始化数据 | [01-database-design](en/01-database-design.md) |
+| [02-认证与权限设计](02-认证与权限设计.md) | 登录时序、Token 结构、Redis 规范、过滤器链、RBAC、数据权限 | [02-auth-and-permissions](en/02-auth-and-permissions.md) |
+| [03-接口设计](03-接口设计.md) | 统一返回体、错误码、全部接口清单、权限字符表 | [03-api-design](en/03-api-design.md) |
+| [04-前端设计](04-前端设计.md) | 目录结构、动态路由、axios 刷新队列、权限指令 | [04-frontend-design](en/04-frontend-design.md) |
+| [05-开发规范](05-开发规范.md) | 分层、命名、DTO/VO/Converter、分页、事务、MyBatis-Plus 与 XML 规范 | [05-development-conventions](en/05-development-conventions.md) |
+| [06-前端配置驱动设计](06-前端配置驱动设计.md) | CRUD Schema、useCrud、三层策略、落地顺序 | [06-schema-driven-crud](en/06-schema-driven-crud.md) |
+| [07-部署方案](07-部署方案.md) | WAR + Nginx 部署、路径前缀、发版回滚 | [07-deployment](en/07-deployment.md) |
+| [避坑清单](避坑清单.md) | 上线前逐条核对的风险项 | [pitfalls](en/pitfalls.md) |
 
 ---
 
@@ -24,18 +26,18 @@
 
 | 层 | 选型 | 版本 | 说明 |
 |---|---|---|---|
-| 运行时 | JDK | 21 LTS | Boot 4 要求 17+，21 是兼容性最稳的 LTS |
+| 运行时 | JDK | 17 | Boot 4 最低要求；虚拟线程需 21，当前未启用 |
 | 框架 | Spring Boot | 4.1.2 | |
-| 安全 | Spring Security | 7.1.x | 仅认证 + 授权，不含 authorization-server |
+| 安全 | Spring Security | 7.1.2 | 仅认证 + 授权，不含 authorization-server |
 | ORM | MyBatis-Plus | 3.5.18 | `mybatis-plus-spring-boot4-starter` + `mybatis-plus-jsqlparser` |
-| 数据库 | MySQL | 8.4 LTS | 8.0 已 EOL |
+| 数据库 | MySQL | 8.4+ | 8.0 已 EOL；本机在 9.6 上验证 |
 | 迁移 | Flyway | 随 Boot 管理 | 需显式引入 `spring-boot-starter-flyway` |
-| 缓存 | Redis | 8.x | 会话、验证码、字典、限流、锁 |
+| 缓存 | Redis | 7.0+ | 会话、验证码、限流、锁 |
 | 连接池 | HikariCP | 随 Boot 管理 | 不使用 Druid |
-| 接口文档 | springdoc-openapi | 3.x | 不使用 Knife4j（维护停滞） |
-| 前端 | Vue + Vite + TS | 3.5 / 最新 / 5.x | |
-| UI | Element Plus | 2.x | |
-| 状态 | Pinia | 3.x | |
+| 接口文档 | springdoc-openapi | 3.x | 仅 dev 开启，生产关闭 |
+| 前端 | Vue + Vite + TS | 3.5 / 6 / 5.7 | |
+| UI | Element Plus | 2.9 | |
+| 状态 | Pinia | 2.3 | |
 
 ---
 
@@ -68,7 +70,7 @@
 └──────────┬────────────────────────────┬─────────────────┘
            │                            │
     ┌──────▼──────┐              ┌──────▼──────┐
-    │   MySQL 8.4  │              │   Redis 8   │
+    │  MySQL 8.4+  │              │  Redis 7+   │
     │  业务数据     │              │  会话/缓存   │
     └─────────────┘              └─────────────┘
 ```
@@ -87,16 +89,17 @@ com.wejava
 ├── common/                    # 通用能力，不依赖任何业务模块
 │   ├── core/                  # R<T>、PageResult<T>、BaseEntity
 │   ├── exception/             # BizException、ErrorCode、GlobalExceptionHandler
-│   ├── web/                   # TraceIdFilter、JacksonConfig、WebMvcConfig
+│   ├── web/                   # TraceIdFilter、IpUtils
+│   ├── config/                # JacksonConfig、MybatisPlusConfig、WebMvcConfig
 │   ├── util/                  # 工具类
 │   └── constant/              # 常量、枚举
 │
 ├── security/                  # 认证授权，只依赖 common
 │   ├── config/                # SecurityConfig、PasswordConfig
-│   ├── jwt/                   # JwtService、JwtAuthFilter、TokenStore
+│   ├── jwt/                   # JwtService、JwtAuthFilter、SessionStore、LoginAttemptStore
 │   ├── handler/               # AuthEntryPoint、AccessDeniedHandler
-│   ├── model/                 # LoginSession、AuthUser、Captcha
-│   └── service/               # AuthService、CaptchaService
+│   ├── model/                 # LoginSession、AuthUser、Captcha、OnlineSession
+│   └── service/               # CaptchaService
 │
 ├── system/                    # 系统管理，依赖 common + security
 │   ├── controller/            # XxxController
@@ -106,6 +109,7 @@ com.wejava
 │   ├── converter/             # XxxConverter（MapStruct）
 │   └── model/
 │       ├── entity/            # SysUser、SysRole ...
+│       ├── converter/         # SysUserConverter（MapStruct）
 │       ├── query/             # SysUserQuery（继承 PageQuery）
 │       ├── form/              # SysUserCreateForm / SysUserUpdateForm
 │       └── vo/                # SysUserVO
@@ -171,8 +175,8 @@ wejava-backend/
         └── mapper/                  # XML（复杂查询才用）
 ```
 
-**包内分层约定**：`controller` / `service` / `mapper` / `entity` / `dto` / `vo`。
-`dto` 是入参，`vo` 是出参，`entity` 只用于持久化，**三者不混用**。
+**包内分层约定**：`controller` / `service`（接口）+ `service/impl`（实现）/ `mapper` / `converter` / `model/{entity,query,form,vo}`。
+`form` 是入参，`vo` 是出参，`entity` 只用于持久化，**三者不混用**，转换由 MapStruct 的 converter 完成。
 
 ---
 
@@ -205,8 +209,8 @@ wejava-backend/
 |---|---|---|
 | MySQL | 3306 | 库名 `wejava`，账号 `wejava` |
 | Redis | 6379 | db 0，需要密码 |
-| 后端 | 8000 | 上下文路径 `/api` |
-| 前端 | 3300 | 开发代理到 8000 |
+| 后端 | 8000 | 开发上下文 `/dev/api`；生产 WAR 为 `/prod/api` |
+| 前端 | 3300 | 开发访问 `/dev/`，代理 `/dev/api` 到 8000 |
 
 ```bash
 # 1. 起后端（Flyway 自动建表并初始化数据）
@@ -257,7 +261,7 @@ cd wejava-backend
 | M3-1 | 后端 RBAC：用户/角色/菜单 CRUD + 动态路由接口 | ✅ 完成 |
 | M3-2 | 前端基座：Vue 工程、登录页、布局、动态路由、axios | ✅ 完成 |
 | M3-3 | 配置驱动：CrudPage 四件套 + 用户/角色页 + 菜单树形页 + 多页签 | ✅ 完成 |
-| M4 | 部门/岗位/字典/参数/公告 | |
-| M5 | 日志（操作/登录）+ 在线用户 + 监控 | |
-| M6 | 数据权限、限流、导出 | |
-| M7 | 前端布局、多页签、主题、打包部署 | |
+| M4 | 部门/岗位/字典/参数/公告 | ✅ 完成 |
+| M5 | 日志（操作/登录）+ 在线用户 + 监控 | ✅ 完成 |
+| M6 | 数据权限、限流、导出 | ✅ 完成 |
+| M7 | 前端布局、多页签、主题、打包部署 | ✅ 完成（部署验证待服务器） |

@@ -163,7 +163,12 @@ See [docs/07-部署方案.md](docs/07-部署方案.md) for the full setup (direc
 
 ## Documentation
 
-Design documents are indexed in [docs/README.md](docs/README.md). They are currently written in Chinese:
+Design documents are available in both languages:
+
+- **English** — [docs/en/README.md](docs/en/README.md)
+- **中文** — [docs/README.md](docs/README.md)
+
+The table below lists the Chinese originals; every one has an English counterpart under `docs/en/`.
 
 - [数据库设计](docs/01-数据库设计.md) — database design
 - [认证与权限设计](docs/02-认证与权限设计.md) — authentication and authorization

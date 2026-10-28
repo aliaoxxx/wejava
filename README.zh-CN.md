@@ -164,7 +164,12 @@ pnpm build
 
 ## 文档
 
-设计文档索引见 [docs/README.md](docs/README.md)：
+设计文档提供中英两版：
+
+- **中文** — [docs/README.md](docs/README.md)
+- **English** — [docs/en/README.md](docs/en/README.md)
+
+下表为中文原文，每篇在 `docs/en/` 下都有对应英文版：
 
 - [数据库设计](docs/01-数据库设计.md)
 - [认证与权限设计](docs/02-认证与权限设计.md)
