@@ -85,7 +85,7 @@ public class SecurityConfig {
                 .toList());
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("X-Trace-Id"));
+        configuration.setExposedHeaders(List.of("X-Request-Id"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
