@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,6 +34,7 @@ public class SseHub {
     private static final long EMITTER_TIMEOUT_MS = 30 * 60 * 1000L;
 
     /** 实例标识：广播时带上，订阅回调据此跳过自己发出的消息，避免重复推送 */
+    @Getter
     private final String instanceId = java.util.UUID.randomUUID().toString();
 
     private final Map<Long, List<SseEmitter>> connections = new ConcurrentHashMap<>();
@@ -123,10 +125,6 @@ public class SseHub {
                 }
             }
         });
-    }
-
-    public String getInstanceId() {
-        return instanceId;
     }
 
     public int onlineConnections() {

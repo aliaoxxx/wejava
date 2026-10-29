@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,8 @@ public class ConcurrencyInterceptor implements HandlerInterceptor {
     private final JsonMapper jsonMapper;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+    public boolean preHandle(
+            @NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)
             throws java.io.IOException {
         LoginSession session = SecurityUtils.currentSession();
         if (session == null) {
@@ -72,7 +74,7 @@ public class ConcurrencyInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(
-            HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+            HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler, Exception ex) {
         Object key = request.getAttribute(ATTR_KEY);
         if (key instanceof String value && !value.isEmpty()) {
             redis.opsForValue().decrement(value);

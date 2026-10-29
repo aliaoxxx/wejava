@@ -3,6 +3,7 @@ package com.wejava.common.config;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -32,7 +33,7 @@ public class StartupSecretValidator implements ApplicationRunner {
     private String aiConfigSecret;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(@NonNull ApplicationArguments args) {
         if (!isProd()) {
             log.warn("当前非生产环境，跳过默认密钥校验");
             return;

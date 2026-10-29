@@ -4,6 +4,7 @@ import com.wejava.security.permission.AuthorityResolver;
 import java.util.Collection;
 import java.util.Objects;
 import lombok.Getter;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,7 +41,7 @@ public class AuthUser implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
         return AuthorityResolver.resolve(session);
     }
 
@@ -50,7 +51,7 @@ public class AuthUser implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
+    public @NonNull String getUsername() {
         return session.getUsername();
     }
 
