@@ -55,59 +55,63 @@ onMounted(fetchList)
 </script>
 
 <template>
-  <el-card shadow="never">
-    <div class="toolbar">
-      <el-radio-group :model-value="query.msgType" @update:model-value="switchType">
-        <el-radio-button v-for="tab in TABS" :key="String(tab.value)" :value="tab.value">
-          {{ tab.label }}
-        </el-radio-button>
-      </el-radio-group>
-      <div class="actions">
-        <el-button @click="fetchList">刷新</el-button>
-        <el-button type="primary" :disabled="messageStore.unreadCount === 0" @click="readAll">
-          全部已读
-        </el-button>
+  <div class="page-container">
+    <el-card shadow="never" class="page-content">
+      <div class="page-toolbar">
+        <el-radio-group :model-value="query.msgType" @update:model-value="switchType">
+          <el-radio-button v-for="tab in TABS" :key="String(tab.value)" :value="tab.value">
+            {{ tab.label }}
+          </el-radio-button>
+        </el-radio-group>
+        <div class="actions">
+          <el-button @click="fetchList">刷新</el-button>
+          <el-button type="primary" :disabled="messageStore.unreadCount === 0" @click="readAll">
+            全部已读
+          </el-button>
+        </div>
       </div>
-    </div>
 
-    <el-table v-loading="loading" :data="list" border>
-      <el-table-column label="类型" width="90" align="center">
-        <template #default="{ row }">
-          <el-tag size="small" :type="row.msgType === 1 ? 'warning' : row.msgType === 2 ? 'info' : 'primary'">
-            {{ row.msgType === 1 ? '公告' : row.msgType === 2 ? '系统' : '消息' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="标题" min-width="240">
-        <template #default="{ row }">
-          <span :class="{ unread: row.readFlag === 0 }">{{ row.title }}</span>
-          <el-badge v-if="row.readFlag === 0" is-dot class="dot" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="createTime" label="时间" width="180" />
-      <el-table-column label="状态" width="90" align="center">
-        <template #default="{ row }">
-          <el-tag size="small" :type="row.readFlag === 0 ? 'danger' : 'info'">
-            {{ row.readFlag === 0 ? '未读' : '已读' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="100" align="center">
-        <template #default="{ row }">
-          <el-button link type="primary" @click="openDetail(row)">查看</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <div class="page-table-wrapper">
+        <el-table v-loading="loading" :data="list" border class="page-table" height="100%">
+          <el-table-column label="类型" width="90" align="center">
+            <template #default="{ row }">
+              <el-tag size="small" :type="row.msgType === 1 ? 'warning' : row.msgType === 2 ? 'info' : 'primary'">
+                {{ row.msgType === 1 ? '公告' : row.msgType === 2 ? '系统' : '消息' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="标题" min-width="240">
+            <template #default="{ row }">
+              <span :class="{ unread: row.readFlag === 0 }">{{ row.title }}</span>
+              <el-badge v-if="row.readFlag === 0" is-dot class="dot" />
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="时间" width="180" />
+          <el-table-column label="状态" width="90" align="center">
+            <template #default="{ row }">
+              <el-tag size="small" :type="row.readFlag === 0 ? 'danger' : 'info'">
+                {{ row.readFlag === 0 ? '未读' : '已读' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100" align="center">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="openDetail(row)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
-    <el-pagination class="pager" background layout="total, prev, pager, next" :total="total"
-      v-model:current-page="query.pageNum" :page-size="query.pageSize"
-      @current-change="() => fetchList()" />
-  </el-card>
+      <el-pagination class="page-pagination" background layout="total, prev, pager, next" :total="total"
+        v-model:current-page="query.pageNum" :page-size="query.pageSize"
+        @current-change="() => fetchList()" />
+    </el-card>
 
-  <el-dialog v-model="detail.visible" :title="detail.row?.title" width="640px">
-    <div class="detail-time">{{ detail.row?.createTime }}</div>
-    <div class="detail-content">{{ detail.row?.content }}</div>
-  </el-dialog>
+    <el-dialog v-model="detail.visible" :title="detail.row?.title" width="640px">
+      <div class="detail-time">{{ detail.row?.createTime }}</div>
+      <div class="detail-content">{{ detail.row?.content }}</div>
+    </el-dialog>
+  </div>
 </template>
 
 <style scoped>

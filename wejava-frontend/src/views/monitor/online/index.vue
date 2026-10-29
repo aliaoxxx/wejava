@@ -29,31 +29,35 @@ onMounted(fetchList)
 </script>
 
 <template>
-  <el-card shadow="never">
-    <div class="toolbar">
-      <el-button @click="fetchList">刷新</el-button>
-      <span class="tip">在线用户 {{ total }} 人（含本机所有会话）</span>
-    </div>
+  <div class="page-container">
+    <el-card shadow="never" class="page-content">
+      <div class="page-toolbar">
+        <el-button @click="fetchList">刷新</el-button>
+        <span class="tip">在线用户 {{ total }} 人（含本机所有会话）</span>
+      </div>
 
-    <el-table v-loading="loading" :data="list" border>
-      <el-table-column prop="username" label="用户名" min-width="120" />
-      <el-table-column prop="nickname" label="昵称" min-width="120" />
-      <el-table-column prop="userId" label="用户ID" width="180" />
-      <el-table-column prop="deptId" label="部门ID" width="180" />
-      <el-table-column prop="lastActiveTime" label="最后活跃" width="180" />
-      <el-table-column label="操作" width="120" align="center">
-        <template #default="{ row }">
-          <el-button v-hasPerm="'monitor:online:forceLogout'" link type="danger" @click="handleKick(row)">
-            强制下线
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <div class="page-table-wrapper">
+        <el-table v-loading="loading" :data="list" border class="page-table" height="100%">
+          <el-table-column prop="username" label="用户名" min-width="120" />
+          <el-table-column prop="nickname" label="昵称" min-width="120" />
+          <el-table-column prop="userId" label="用户ID" width="180" />
+          <el-table-column prop="deptId" label="部门ID" width="180" />
+          <el-table-column prop="lastActiveTime" label="最后活跃" width="180" />
+          <el-table-column label="操作" width="120" align="center">
+            <template #default="{ row }">
+              <el-button v-hasPerm="'monitor:online:forceLogout'" link type="danger" @click="handleKick(row)">
+                强制下线
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
-    <el-pagination class="pager" background layout="total, prev, pager, next" :total="total"
-      v-model:current-page="query.pageNum" :page-size="query.pageSize"
-      @current-change="() => fetchList()" />
-  </el-card>
+      <el-pagination class="page-pagination" background layout="total, prev, pager, next" :total="total"
+        v-model:current-page="query.pageNum" :page-size="query.pageSize"
+        @current-change="() => fetchList()" />
+    </el-card>
+  </div>
 </template>
 
 <style scoped>

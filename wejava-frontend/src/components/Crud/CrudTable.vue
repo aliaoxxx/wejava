@@ -8,8 +8,6 @@ const props = defineProps<{
   schema: CrudSchema
   list: any[]
   loading: boolean
-  /** 表格固定高度（px），由父组件按容器实际高度传入；不传则自适应内容 */
-  tableHeight?: number
 }>()
 
 const emit = defineEmits<{
@@ -38,7 +36,8 @@ function dictLabel(row: any, col: Column) {
 
 <template>
   <el-table
-      :height="tableHeight || undefined"
+    class="page-table"
+    height="100%"
     :data="list"
     :loading="loading"
     :row-key="schema.rowKey"

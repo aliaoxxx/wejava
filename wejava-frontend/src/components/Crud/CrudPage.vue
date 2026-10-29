@@ -4,7 +4,6 @@ import CrudTable from './CrudTable.vue'
 import CrudForm from './CrudForm.vue'
 import { hasPerm } from '@/utils/permission'
 import { loadSchemaDicts } from '@/hooks/useDict'
-import { useFillHeight } from '@/hooks/useFillHeight'
 
 import type { CrudInstance } from '@/hooks/useCrud'
 
@@ -19,7 +18,6 @@ onMounted(() => {
   loadSchemaDicts([...(schema.columns ?? []), ...(schema.form ?? [])] as any)
 })
 const formRef = ref()
-const { wrapRef: tableWrapRef, height: tableHeight } = useFillHeight()
 
 async function handleSubmit() {
   const ok = await formRef.value?.validate()
@@ -41,59 +39,61 @@ function onSizeChange(size: number) {
 </script>
 
 <template>
-  <div class="fill-page">
-  <!-- 搜索区独立成卡片 -->
-  <el-card v-if="schema.search?.length" shadow="never" class="crud-search-card">
-    <CrudSearch
-      :schema="schema"
-      :model="crud.searchModel"
-      @search="crud.handleSearch"
-      @reset="crud.handleReset"
-    />
-  </el-card>
+  <div class="page-container">
+    <!-- 搜索区独立成卡片，高度自适应 -->
+    <el-card v-if="schema.search?.length" shadow="never" class="page-search">
+      <CrudSearch
+        :schema="schema"
+        :model="crud.searchModel"
+        @search="crud.handleSearch"
+        @reset="crud.handleReset"
+      />
+    </el-card>
 
-  <el-card shadow="never" class="fill-card">
-    <div class="crud-toolbar">
-      <el-button v-if="canAdd && !schema.readonly" type="primary" @click="crud.openCreate()">新增</el-button>
-      <el-button
-        v-if="canRemove"
-        type="danger"
-        :disabled="!crud.selected.length"
-        @click="crud.handleRemove(crud.selected)"
-      >
-        批量删除
-      </el-button>
-      <slot name="toolbar" />
-    </div>
+    <!-- 主卡片：工具栏 / 表格 / 分页 三行，中间行由表格撑满并内部滚动 -->
+    <el-card shadow="never" class="page-content">
+      <div class="page-toolbar crud-toolbar">
+        <el-button v-if="canAdd && !schema.readonly" type="primary" @click="crud.openCreate()">新增</el-button>
+        <el-button
+          v-if="canRemove"
+          type="danger"
+          :disabled="!crud.selected.length"
+          @click="crud.handleRemove(crud.selected)"
+        >
+          批量删除
+        </el-button>
+        <slot name="toolbar" />
+      </div>
 
-    <div ref="tableWrapRef" class="fill-table-wrap">
-    <CrudTable
-      :schema="schema"
-      :list="crud.list"
-      :loading="crud.loading"
-      :table-height="tableHeight"
-      @selection-change="crud.handleSelectionChange"
-      @edit="crud.openEdit"
-      @remove="(row: any) => crud.handleRemove([row])"
-    >
-      <template #row-actions="{ row }">
-        <slot name="row-actions" :row="row" />
-      </template>
-    </CrudTable>
-    </div>
+      <div class="page-table-wrapper">
+        <CrudTable
+          :schema="schema"
+          :list="crud.list"
+          :loading="crud.loading"
+          @selection-change="crud.handleSelectionChange"
+          @edit="crud.openEdit"
+          @remove="(row: any) => crud.handleRemove([row])"
+        >
+          <template #row-actions="{ row }">
+            <slot name="row-actions" :row="row" />
+          </template>
+        </CrudTable>
+      </div>
 
-    <el-pagination
-      v-model:current-page="crud.query.pageNum"
-      v-model:page-size="crud.query.pageSize"
-      class="fill-pager"
-      background
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="crud.total"
-      :page-sizes="[10, 20, 50, 100]"
-      @current-change="onPageChange"
-      @size-change="onSizeChange"
-    />
+      <el-pagination
+        v-model:current-page="crud.query.pageNum"
+        v-model:page-size="crud.query.pageSize"
+        class="page-pagination"
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="crud.total"
+        :page-sizes="[10, 20, 50, 100]"
+        @current-change="onPageChange"
+        @size-change="onSizeChange"
+      />
+    </el-card>
 
+    <!-- 弹窗放在卡片外，避免占用卡片内容区的 grid 行 -->
     <CrudForm
       v-if="schema.form?.length"
       ref="formRef"
@@ -101,18 +101,5 @@ function onSizeChange(size: number) {
       :dialog="crud.dialog"
       @submit="handleSubmit"
     />
-  </el-card>
   </div>
 </template>
-
-<style scoped>
-.crud-search-card {
-  margin-bottom: 12px;
-}
-.crud-toolbar {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-</style>

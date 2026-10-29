@@ -143,9 +143,9 @@ onMounted(fetchTypes)
 </script>
 
 <template>
-  <el-row :gutter="16">
-    <el-col :span="8">
-      <el-card shadow="never">
+  <div class="page-container">
+    <div class="page-split">
+      <el-card shadow="never" class="page-content page-content--bare">
         <template #header>
           <div class="card-head">
             <span>字典类型</span>
@@ -154,31 +154,34 @@ onMounted(fetchTypes)
             </el-button>
           </div>
         </template>
-        <el-table
-          v-loading="typeLoading"
-          :data="types"
-          size="small"
-          highlight-current-row
-          @current-change="selectType"
-        >
-          <el-table-column prop="dictName" label="字典名称" min-width="100" />
-          <el-table-column prop="dictType" label="类型" min-width="120" show-overflow-tooltip />
-          <el-table-column label="操作" width="100" align="center">
-            <template #default="{ row }">
-              <el-button v-hasPerm="'system:dict:edit'" link type="primary" @click.stop="openTypeEdit(row)">
-                改
-              </el-button>
-              <el-button v-hasPerm="'system:dict:remove'" link type="danger" @click.stop="removeType(row)">
-                删
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </el-col>
 
-    <el-col :span="16">
-      <el-card shadow="never">
+        <div class="page-table-wrapper">
+          <el-table
+            v-loading="typeLoading"
+            :data="types"
+            class="page-table"
+            height="100%"
+            size="small"
+            highlight-current-row
+            @current-change="selectType"
+          >
+            <el-table-column prop="dictName" label="字典名称" min-width="100" />
+            <el-table-column prop="dictType" label="类型" min-width="120" show-overflow-tooltip />
+            <el-table-column label="操作" width="100" align="center">
+              <template #default="{ row }">
+                <el-button v-hasPerm="'system:dict:edit'" link type="primary" @click.stop="openTypeEdit(row)">
+                  改
+                </el-button>
+                <el-button v-hasPerm="'system:dict:remove'" link type="danger" @click.stop="removeType(row)">
+                  删
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-card>
+
+      <el-card shadow="never" class="page-content page-content--bare">
         <template #header>
           <div class="card-head">
             <span>字典数据{{ selected ? ` - ${selected.dictName}` : '' }}</span>
@@ -193,32 +196,34 @@ onMounted(fetchTypes)
           </div>
         </template>
 
-        <el-table v-loading="dataLoading" :data="dataList" size="small" border>
-          <el-table-column prop="dictLabel" label="标签" min-width="120" />
-          <el-table-column prop="dictValue" label="值" min-width="100" />
-          <el-table-column prop="dictSort" label="排序" width="70" align="center" />
-          <el-table-column prop="listClass" label="回显样式" width="110" />
-          <el-table-column label="状态" width="80" align="center">
-            <template #default="{ row }">
-              <el-tag size="small" :type="row.status === 0 ? 'success' : 'info'">
-                {{ row.status === 0 ? '正常' : '停用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="120" align="center">
-            <template #default="{ row }">
-              <el-button v-hasPerm="'system:dict:edit'" link type="primary" @click="openDataEdit(row)">修改</el-button>
-              <el-button v-hasPerm="'system:dict:remove'" link type="danger" @click="removeData(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="page-table-wrapper">
+          <el-table v-loading="dataLoading" :data="dataList" class="page-table" height="100%" size="small" border>
+            <el-table-column prop="dictLabel" label="标签" min-width="120" />
+            <el-table-column prop="dictValue" label="值" min-width="100" />
+            <el-table-column prop="dictSort" label="排序" width="70" align="center" />
+            <el-table-column prop="listClass" label="回显样式" width="110" />
+            <el-table-column label="状态" width="80" align="center">
+              <template #default="{ row }">
+                <el-tag size="small" :type="row.status === 0 ? 'success' : 'info'">
+                  {{ row.status === 0 ? '正常' : '停用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120" align="center">
+              <template #default="{ row }">
+                <el-button v-hasPerm="'system:dict:edit'" link type="primary" @click="openDataEdit(row)">修改</el-button>
+                <el-button v-hasPerm="'system:dict:remove'" link type="danger" @click="removeData(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
-        <el-pagination class="pager" background layout="total, prev, pager, next" :total="dataTotal"
+        <el-pagination class="page-pagination" background layout="total, prev, pager, next" :total="dataTotal"
           v-model:current-page="dataQuery.pageNum" :page-size="dataQuery.pageSize"
           @current-change="() => fetchData()" />
       </el-card>
-    </el-col>
-  </el-row>
+    </div>
+  </div>
 
   <el-dialog v-model="typeDialog.visible" :title="typeDialog.mode === 'create' ? '新增字典类型' : '修改字典类型'"
     width="520px" destroy-on-close>

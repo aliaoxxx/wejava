@@ -1,0 +1,96 @@
+/*
+ * 列表页通用布局（参考 youlai-admin 的做法）
+ *
+ * 卡片内容区用 grid 三行：工具栏 / 表格 / 分页。
+ * 中间行 minmax(0, 1fr) 提供确定高度，表格 height:100% 就能正确撑满并内部滚动，
+ * 不需要用 JS 去量高度。
+ */
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 搜索区：高度自适应，不参与拉伸 */
+.page-search {
+  flex-shrink: 0;
+}
+
+/* 主卡片：吃掉剩余高度 */
+.page-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+
+  > .el-card__body {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/* 工具栏、分页：固定高度 */
+.page-toolbar,
+.page-pagination {
+  flex-shrink: 0;
+}
+
+.page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.page-pagination {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 表格容器：占满中间那行，内部滚动 */
+.page-table-wrapper {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-table {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  .el-table__inner-wrapper {
+    height: 100%;
+  }
+}
+
+/* 卡片里没有工具栏时（如表头自带操作区），少一行 */
+.page-content--bare > .el-card__body {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+/* 左右分栏（如字典管理） */
+.page-split {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 12px;
+  min-height: 0;
+}
+
+.page-split > .page-content {
+  min-width: 0;
+}
+
+/* 左侧列表窄一些，右侧数据区占主要空间 */
+.page-split > .page-content:first-child {
+  flex: 0 0 34%;
+}
