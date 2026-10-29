@@ -10,11 +10,11 @@ export default defineConfig(({ mode }) => ({
     vue(),
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
-      resolvers: [ElementPlusResolver()],
+      resolvers: [ElementPlusResolver({ importStyle: false })],
       dts: 'src/types/auto-imports.d.ts'
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [ElementPlusResolver({ importStyle: false })],
       dts: 'src/types/components.d.ts'
     })
   ],
@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => ({
     preprocessorOptions: {
       scss: { api: 'modern-compiler' }
     }
+  },
+  // 常用依赖提前预构建，避免首次打开页面时逐个发现、逐个 reload
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'axios', 'element-plus/es', '@element-plus/icons-vue', 'dayjs']
   },
   // 前端挂在前缀下：生产 /prod/，开发 /dev/
   base: mode === 'production' ? '/prod/' : '/dev/',
