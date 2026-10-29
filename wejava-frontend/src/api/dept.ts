@@ -8,11 +8,11 @@ export function getDept(deptId: string | number) {
   return http.get<Record<string, unknown>>(`/system/dept/${deptId}`)
 }
 
-export function createDept(data: any) {
+export function createDept(data: Record<string, unknown>) {
   return http.post('/system/dept', data)
 }
 
-export function updateDept(data: any) {
+export function updateDept(data: Record<string, unknown>) {
   return http.put('/system/dept', data)
 }
 

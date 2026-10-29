@@ -1,6 +1,6 @@
 import { http, type PageData } from '@/utils/http'
 
-export function listUser(params: any) {
+export function listUser(params: Record<string, unknown>) {
   return http.get<PageData>('/system/user/list', { params })
 }
 
@@ -8,11 +8,11 @@ export function getUser(userId: string | number) {
   return http.get<Record<string, unknown>>(`/system/user/${userId}`)
 }
 
-export function createUser(data: any) {
+export function createUser(data: Record<string, unknown>) {
   return http.post('/system/user', data)
 }
 
-export function updateUser(data: any) {
+export function updateUser(data: Record<string, unknown>) {
   return http.put('/system/user', data)
 }
 

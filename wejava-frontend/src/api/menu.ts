@@ -12,11 +12,11 @@ export function menuTreeSelect() {
   return http.get<Record<string, unknown>[]>('/system/menu/tree-select')
 }
 
-export function createMenu(data: any) {
+export function createMenu(data: Record<string, unknown>) {
   return http.post('/system/menu', data)
 }
 
-export function updateMenu(data: any) {
+export function updateMenu(data: Record<string, unknown>) {
   return http.put('/system/menu', data)
 }
 

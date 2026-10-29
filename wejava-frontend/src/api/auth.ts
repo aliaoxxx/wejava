@@ -1,5 +1,5 @@
-import request from '@/utils/request'
-import type { BackendRoute, LoginVO, R, UserInfo } from '@/types/global'
+import { http } from '@/utils/http'
+import type { BackendRoute, LoginVO, UserInfo } from '@/types/global'
 
 export interface CaptchaVO {
   captchaKey: string
@@ -7,25 +7,25 @@ export interface CaptchaVO {
 }
 
 export function getCaptcha() {
-  return request.get<any, R<CaptchaVO>>('/auth/captcha')
+  return http.get<CaptchaVO>('/auth/captcha')
 }
 
 export function login(data: { username: string; password: string; captchaKey?: string; captchaCode?: string }) {
-  return request.post<any, R<LoginVO>>('/auth/login', data)
+  return http.post<LoginVO>('/auth/login', data)
 }
 
 export function refreshToken(data: { refreshToken: string }) {
-  return request.post<any, R<LoginVO>>('/auth/refresh', data)
+  return http.post<LoginVO>('/auth/refresh', data)
 }
 
 export function logout() {
-  return request.post<any, R<void>>('/auth/logout')
+  return http.post<void>('/auth/logout')
 }
 
 export function getMe() {
-  return request.get<any, R<UserInfo>>('/auth/me')
+  return http.get<UserInfo>('/auth/me')
 }
 
 export function getRouters() {
-  return request.get<any, R<BackendRoute[]>>('/auth/routers')
+  return http.get<BackendRoute[]>('/auth/routers')
 }
