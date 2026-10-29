@@ -37,7 +37,6 @@ public class TraceIdFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String traceId = resolveTraceId(request);
         MDC.put(TRACE_ID, traceId);
-        //noinspection UastIncorrectHttpHeaderInspection  X-Request-Id 是业界通用约定，不在 IANA 注册表里
         response.setHeader(HEADER, traceId);
         try {
             chain.doFilter(request, response);
@@ -48,7 +47,6 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
     /** 上游传了合法 ID 就沿用（便于串联），否则生成新的 */
     private String resolveTraceId(HttpServletRequest request) {
-        //noinspection UastIncorrectHttpHeaderInspection
         String incoming = request.getHeader(HEADER);
         if (incoming != null) {
             String trimmed = incoming.trim();

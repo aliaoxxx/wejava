@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -25,7 +26,7 @@ public class RestAuthEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
-            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            HttpServletRequest request, HttpServletResponse response, @NonNull AuthenticationException authException)
             throws IOException {
         Object attribute = request.getAttribute(JwtAuthFilter.AUTH_ERROR);
         ErrorCode code = attribute instanceof ErrorCode errorCode ? errorCode : ErrorCode.NOT_LOGIN;

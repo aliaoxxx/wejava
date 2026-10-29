@@ -22,13 +22,11 @@ public final class IpUtils {
     private IpUtils() {}
 
     public static String getIp(HttpServletRequest request) {
-        //noinspection UastIncorrectHttpHeaderInspection  X-Real-IP 是 Nginx 约定的自定义头
         String realIp = request.getHeader(HEADER_REAL_IP);
         if (isUsable(realIp)) {
             return realIp.trim();
         }
 
-        //noinspection UastIncorrectHttpHeaderInspection
         String forwarded = request.getHeader(HEADER_FORWARDED_FOR);
         if (isUsable(forwarded)) {
             String[] parts = forwarded.split(",");

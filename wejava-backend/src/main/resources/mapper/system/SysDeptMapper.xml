@@ -7,4 +7,22 @@
         SELECT COUNT(*) FROM sys_user WHERE dept_id = #{deptId} AND del_flag = 0
     </select>
 
+    <!--
+        批量刷新子孙部门的祖级链。
+        每个节点的 ancestors 值不同，用 CASE WHEN 一条 SQL 更新，
+        避免「每个节点一次 UPDATE」的 N+1。
+    -->
+    <update id="updateAncestorsBatch">
+        UPDATE sys_dept
+           SET ancestors = CASE dept_id
+            <foreach collection="list" item="dept">
+                WHEN #{dept.deptId} THEN #{dept.ancestors}
+            </foreach>
+               END
+         WHERE dept_id IN
+            <foreach collection="list" item="dept" open="(" separator="," close=")">
+                #{dept.deptId}
+            </foreach>
+    </update>
+
 </mapper>
