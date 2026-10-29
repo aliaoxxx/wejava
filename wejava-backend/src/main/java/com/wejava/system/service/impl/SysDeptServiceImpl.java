@@ -43,7 +43,7 @@ public class SysDeptServiceImpl implements SysDeptService {
                 .eq(query.getStatus() != null, SysDept::getStatus, query.getStatus())
                 .orderByAsc(SysDept::getParentId)
                 .orderByAsc(SysDept::getOrderNum));
-        return buildTree(converter.toVOList(depts), 0L);
+        return buildTree(converter.toVOList(depts));
     }
 
     @Override
@@ -101,7 +101,7 @@ public class SysDeptServiceImpl implements SysDeptService {
                 .eq(SysDept::getStatus, 0)
                 .orderByAsc(SysDept::getParentId)
                 .orderByAsc(SysDept::getOrderNum));
-        return buildTree(converter.toVOList(depts), 0L);
+        return buildTree(converter.toVOList(depts));
     }
 
     // ---------------- 内部 ----------------
@@ -170,10 +170,10 @@ public class SysDeptServiceImpl implements SysDeptService {
     }
 
     /** 一次分组后按层挂载，避免每个节点都遍历全量列表（O(n²) → O(n)） */
-    private List<SysDeptVO> buildTree(List<SysDeptVO> all, Long parentId) {
+    private List<SysDeptVO> buildTree(List<SysDeptVO> all) {
         Map<Long, List<SysDeptVO>> byParent = all.stream()
                 .collect(Collectors.groupingBy(node -> node.getParentId() == null ? 0L : node.getParentId()));
-        return attachChildren(byParent, parentId, 0);
+        return attachChildren(byParent, 0L, 0);
     }
 
     private List<SysDeptVO> attachChildren(Map<Long, List<SysDeptVO>> byParent, Long parentId, int depth) {

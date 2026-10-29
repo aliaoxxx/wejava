@@ -13,6 +13,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -93,6 +95,18 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public R<Void> handleAccessDenied(AccessDeniedException e) {
         return R.fail(ErrorCode.FORBIDDEN);
+    }
+
+    /**
+     * 客户端已断开（SSE / 长连接最常见的场景）。
+     * <p>
+     * 这类异常发生在响应已经提交、Content-Type 已是 text/event-stream 的时候：
+     * 既没法再写 JSON 回去，也不是服务端故障。记 debug 即可，
+     * 否则会被下面的通用处理器当成 500 记 ERROR，还会因为写不回 JSON 再抛一次异常。
+     */
+    @ExceptionHandler({AsyncRequestNotUsableException.class, AsyncRequestTimeoutException.class})
+    public void handleAsyncDisconnect(Exception e) {
+        log.debug("客户端已断开，忽略本次响应写入: {}", e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
