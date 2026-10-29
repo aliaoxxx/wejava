@@ -10,10 +10,14 @@ import com.wejava.system.model.form.SysDeptForm;
 import com.wejava.system.model.query.SysDeptQuery;
 import com.wejava.system.model.vo.SysDeptVO;
 import com.wejava.system.service.SysDeptService;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,12 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 public class SysDeptServiceImpl implements SysDeptService {
+
+    /** 部门树最大节点数，超了说明数据异常（成环） */
+    private static final int MAX_TREE_NODES = 10000;
+
+    /** 部门树最大深度 */
+    private static final int MAX_TREE_DEPTH = 32;
 
     private final SysDeptMapper deptMapper;
     private final SysDeptConverter converter;
@@ -119,26 +129,62 @@ public class SysDeptServiceImpl implements SysDeptService {
         }
     }
 
+    /**
+     * 刷新子孙部门的祖级链。
+     * <p>
+     * 原来每个子部门都要 SELECT 一次、UPDATE 一次。现在一次查出全部部门在内存里算好，
+     * 再用一条 CASE WHEN 批量更新，查询次数从 O(节点数) 降到 2 次。
+     */
     private void refreshChildrenAncestors(SysDept parent) {
-        List<SysDept> children =
-                deptMapper.selectList(Wrappers.<SysDept>lambdaQuery().eq(SysDept::getParentId, parent.getDeptId()));
-        for (SysDept child : children) {
-            child.setAncestors(parent.getAncestors() + "," + parent.getDeptId());
-            deptMapper.updateById(child);
-            refreshChildrenAncestors(child);
+        List<SysDept> all =
+                deptMapper.selectList(Wrappers.<SysDept>lambdaQuery().select(SysDept::getDeptId, SysDept::getParentId));
+        Map<Long, List<SysDept>> byParent = all.stream()
+                .filter(dept -> dept.getParentId() != null)
+                .collect(Collectors.groupingBy(SysDept::getParentId));
+
+        List<SysDept> updates = new ArrayList<>();
+        Deque<Object[]> queue = new ArrayDeque<>();
+        queue.add(new Object[] {parent, parent.getAncestors()});
+
+        int visited = 0;
+        while (!queue.isEmpty()) {
+            if (++visited > MAX_TREE_NODES) {
+                // 数据成环时防止死循环
+                throw new IllegalStateException("部门层级异常，可能存在循环引用");
+            }
+            Object[] current = queue.poll();
+            SysDept node = (SysDept) current[0];
+            String nodeAncestors = (String) current[1];
+            for (SysDept child : byParent.getOrDefault(node.getDeptId(), List.of())) {
+                String childAncestors = nodeAncestors + "," + node.getDeptId();
+                SysDept update = new SysDept();
+                update.setDeptId(child.getDeptId());
+                update.setAncestors(childAncestors);
+                updates.add(update);
+                queue.add(new Object[] {child, childAncestors});
+            }
+        }
+        if (!updates.isEmpty()) {
+            deptMapper.updateAncestorsBatch(updates);
         }
     }
 
+    /** 一次分组后按层挂载，避免每个节点都遍历全量列表（O(n²) → O(n)） */
     private List<SysDeptVO> buildTree(List<SysDeptVO> all, Long parentId) {
-        List<SysDeptVO> result = new ArrayList<>();
-        for (SysDeptVO node : all) {
-            if (!Objects.equals(node.getParentId(), parentId)) {
-                continue;
-            }
-            node.setChildren(buildTree(all, node.getDeptId()));
-            result.add(node);
+        Map<Long, List<SysDeptVO>> byParent = all.stream()
+                .collect(Collectors.groupingBy(node -> node.getParentId() == null ? 0L : node.getParentId()));
+        return attachChildren(byParent, parentId, 0);
+    }
+
+    private List<SysDeptVO> attachChildren(Map<Long, List<SysDeptVO>> byParent, Long parentId, int depth) {
+        if (depth > MAX_TREE_DEPTH) {
+            throw new IllegalStateException("部门层级过深，可能存在循环引用");
         }
-        return result;
+        List<SysDeptVO> nodes = byParent.getOrDefault(parentId, List.of());
+        for (SysDeptVO node : nodes) {
+            node.setChildren(attachChildren(byParent, node.getDeptId(), depth + 1));
+        }
+        return nodes;
     }
 
     private SysDept requireDept(Long deptId) {

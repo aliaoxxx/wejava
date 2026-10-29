@@ -2,6 +2,7 @@ package com.wejava.common.aspect;
 
 import com.wejava.common.annotation.RateLimit;
 import com.wejava.common.exception.RateLimitException;
+import com.wejava.common.util.RedisCounter;
 import com.wejava.common.web.IpUtils;
 import com.wejava.security.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +13,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.annotation.Order;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -30,17 +30,15 @@ public class RateLimitAspect {
 
     private static final String KEY_PREFIX = "admin:rate:";
 
-    private final StringRedisTemplate redis;
+    private final RedisCounter redisCounter;
 
     @Around("@annotation(rateLimit)")
     public Object around(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
         String redisKey = KEY_PREFIX + buildKey(joinPoint);
-        Long current = redis.opsForValue().increment(redisKey);
-        if (current != null && current == 1L) {
-            redis.expire(redisKey, Duration.ofSeconds(rateLimit.seconds()));
-        }
+        // INCR + EXPIRE 在 Lua 里原子完成，避免两步之间进程退出导致 key 永不过期
+        long current = redisCounter.increment(redisKey, Duration.ofSeconds(rateLimit.seconds()));
 
-        if (current != null && current > rateLimit.count()) {
+        if (current > rateLimit.count()) {
             String message =
                     rateLimit.message().isBlank() ? "请求过于频繁，请 " + rateLimit.seconds() + " 秒后再试" : rateLimit.message();
             throw new RateLimitException(message);

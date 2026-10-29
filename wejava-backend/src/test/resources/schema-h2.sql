@@ -18,3 +18,22 @@ CREATE TABLE sys_user (
     update_by       VARCHAR(64),
     update_time     TIMESTAMP
 );
+
+DROP TABLE IF EXISTS sys_dept;
+
+CREATE TABLE sys_dept (
+    dept_id     BIGINT       AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    parent_id   BIGINT       NOT NULL DEFAULT 0,
+    ancestors   VARCHAR(500) NOT NULL DEFAULT '',
+    dept_name   VARCHAR(30)  NOT NULL,
+    order_num   INT          NOT NULL DEFAULT 0,
+    leader      VARCHAR(20),
+    phone       VARCHAR(11),
+    email       VARCHAR(50),
+    status      TINYINT      NOT NULL DEFAULT 0,
+    del_flag    TINYINT      NOT NULL DEFAULT 0,
+    create_by   VARCHAR(64),
+    create_time TIMESTAMP,
+    update_by   VARCHAR(64),
+    update_time TIMESTAMP
+);

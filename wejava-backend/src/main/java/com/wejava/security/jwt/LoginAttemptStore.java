@@ -1,5 +1,6 @@
 package com.wejava.security.jwt;
 
+import com.wejava.common.util.RedisCounter;
 import com.wejava.security.config.SecurityProperties;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +18,12 @@ public class LoginAttemptStore {
     private static final String KEY_LOCK = "admin:auth:lock:";
 
     private final StringRedisTemplate redis;
+    private final RedisCounter redisCounter;
     private final SecurityProperties properties;
 
     public long incrFail(String username) {
-        String key = KEY_FAIL + username;
-        Long count = redis.opsForValue().increment(key);
-        if (count != null && count == 1L) {
-            redis.expire(key, Duration.ofMinutes(properties.getLockMinutes()));
-        }
-        return count == null ? 0 : count;
+        // 自增和设置过期原子完成，避免计数永久累积
+        return redisCounter.increment(KEY_FAIL + username, Duration.ofMinutes(properties.getLockMinutes()));
     }
 
     public int getFail(String username) {
