@@ -37,3 +37,11 @@ CREATE TABLE sys_dept (
     update_by   VARCHAR(64),
     update_time TIMESTAMP
 );
+
+DROP TABLE IF EXISTS sys_user_role;
+
+CREATE TABLE sys_user_role (
+    user_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, role_id)
+);

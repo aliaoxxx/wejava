@@ -1,14 +1,14 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listLoginLog(params: any) {
-  return request.get<any, any>('/monitor/loginlog/list', { params })
+  return http.get<PageData>('/monitor/loginlog/list', { params })
 }
 export function removeLoginLog(ids: string) {
-  return request.delete<any, any>(`/monitor/loginlog/${ids}`)
+  return http.delete(`/monitor/loginlog/${ids}`)
 }
 export function cleanLoginLog() {
-  return request.delete<any, any>('/monitor/loginlog/clean')
+  return http.delete('/monitor/loginlog/clean')
 }
 export function unlockAccount(username: string) {
-  return request.put<any, any>(`/monitor/loginlog/unlock/${username}`)
+  return http.put(`/monitor/loginlog/unlock/${username}`)
 }

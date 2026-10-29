@@ -1,22 +1,22 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listOperLog(params: any) {
-  return request.get<any, any>('/monitor/operlog/list', { params })
+  return http.get<PageData>('/monitor/operlog/list', { params })
 }
 export function removeOperLog(ids: string) {
-  return request.delete<any, any>(`/monitor/operlog/${ids}`)
+  return http.delete(`/monitor/operlog/${ids}`)
 }
 export function cleanOperLog() {
-  return request.delete<any, any>('/monitor/operlog/clean')
+  return http.delete('/monitor/operlog/clean')
 }
 
 export function listOnline(params: any) {
-  return request.get<any, any>('/monitor/online/list', { params })
+  return http.get<PageData>('/monitor/online/list', { params })
 }
 export function kickOnline(jti: string) {
-  return request.delete<any, any>(`/monitor/online/${jti}`)
+  return http.delete(`/monitor/online/${jti}`)
 }
 
 export function getServerInfo() {
-  return request.get<any, any>('/monitor/server')
+  return http.get('/monitor/server')
 }

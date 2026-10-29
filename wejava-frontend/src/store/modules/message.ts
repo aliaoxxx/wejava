@@ -27,7 +27,7 @@ export const useMessageStore = defineStore('message', () => {
     loading.value = true
     try {
       const res = await listMessage({ pageNum: 1, pageSize: 5 })
-      recent.value = res.data?.list ?? []
+      recent.value = (res.data?.list ?? []) as unknown as SiteMessage[]
     } finally {
       loading.value = false
     }

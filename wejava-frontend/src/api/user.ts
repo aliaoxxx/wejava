@@ -1,25 +1,25 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listUser(params: any) {
-  return request.get<any, any>('/system/user/list', { params })
+  return http.get<PageData>('/system/user/list', { params })
 }
 
 export function getUser(userId: string | number) {
-  return request.get<any, any>(`/system/user/${userId}`)
+  return http.get<Record<string, unknown>>(`/system/user/${userId}`)
 }
 
 export function createUser(data: any) {
-  return request.post<any, any>('/system/user', data)
+  return http.post('/system/user', data)
 }
 
 export function updateUser(data: any) {
-  return request.put<any, any>('/system/user', data)
+  return http.put('/system/user', data)
 }
 
 export function removeUser(ids: string) {
-  return request.delete<any, any>(`/system/user/${ids}`)
+  return http.delete(`/system/user/${ids}`)
 }
 
 export function resetUserPassword(data: { userId: string; password: string }) {
-  return request.put<any, any>('/system/user/reset-pwd', data)
+  return http.put('/system/user/reset-pwd', data)
 }

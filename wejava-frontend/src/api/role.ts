@@ -1,33 +1,33 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listRoleOptions() {
-  return request.get<any, any>('/system/role/option-select')
+  return http.get<Record<string, unknown>[]>('/system/role/option-select')
 }
 
 export function listRole(params: any) {
-  return request.get<any, any>('/system/role/list', { params })
+  return http.get<PageData>('/system/role/list', { params })
 }
 
 export function getRole(roleId: string | number) {
-  return request.get<any, any>(`/system/role/${roleId}`)
+  return http.get<Record<string, unknown>>(`/system/role/${roleId}`)
 }
 
 export function createRole(data: any) {
-  return request.post<any, any>('/system/role', data)
+  return http.post('/system/role', data)
 }
 
 export function updateRole(data: any) {
-  return request.put<any, any>('/system/role', data)
+  return http.put('/system/role', data)
 }
 
 export function removeRole(ids: string) {
-  return request.delete<any, any>(`/system/role/${ids}`)
+  return http.delete(`/system/role/${ids}`)
 }
 
 export function getRoleDeptIds(roleId: string | number) {
-  return request.get<any, any>(`/system/role/${roleId}/dept-ids`)
+  return http.get<Array<string | number>>(`/system/role/${roleId}/dept-ids`)
 }
 
 export function updateRoleDataScope(data: any) {
-  return request.put<any, any>('/system/role/data-scope', data)
+  return http.put('/system/role/data-scope', data)
 }

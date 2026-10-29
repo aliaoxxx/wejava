@@ -1,25 +1,25 @@
-import request from '@/utils/request'
+import { http } from '@/utils/http'
 
 export function listDept(params?: any) {
-  return request.get<any, any>('/system/dept/list', { params })
+  return http.get<Record<string, unknown>[]>('/system/dept/list', { params })
 }
 
 export function getDept(deptId: string | number) {
-  return request.get<any, any>(`/system/dept/${deptId}`)
+  return http.get<Record<string, unknown>>(`/system/dept/${deptId}`)
 }
 
 export function createDept(data: any) {
-  return request.post<any, any>('/system/dept', data)
+  return http.post('/system/dept', data)
 }
 
 export function updateDept(data: any) {
-  return request.put<any, any>('/system/dept', data)
+  return http.put('/system/dept', data)
 }
 
 export function removeDept(deptId: string | number) {
-  return request.delete<any, any>(`/system/dept/${deptId}`)
+  return http.delete(`/system/dept/${deptId}`)
 }
 
 export function deptTreeSelect() {
-  return request.get<any, any>('/system/dept/tree-select')
+  return http.get<Record<string, unknown>[]>('/system/dept/tree-select')
 }

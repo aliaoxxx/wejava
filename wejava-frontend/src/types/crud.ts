@@ -1,4 +1,8 @@
 import type { VNode } from 'vue'
+import type { FormItemRule } from 'element-plus'
+
+/** 一行表格数据。字段由各业务模块自行约定，这里只约束"是对象" */
+export type CrudRow = Record<string, unknown>
 
 export type FieldType =
   | 'input'
@@ -20,6 +24,20 @@ export interface Option {
 
 export type CrudMode = 'create' | 'edit'
 
+/** 后端统一响应体 */
+export interface ApiResult<T = unknown> {
+  code: number
+  msg: string
+  data: T
+  traceId?: string
+}
+
+/** 分页响应体 */
+export interface PageData<T = CrudRow> {
+  total: number
+  list: T[]
+}
+
 export interface SearchField {
   prop: string
   label: string
@@ -33,7 +51,7 @@ export interface SearchField {
   span?: number
 }
 
-export interface Column<T = any> {
+export interface Column<T = CrudRow> {
   prop: string
   label: string
   width?: number | string
@@ -55,13 +73,13 @@ export interface FormField {
   label: string
   type: FieldType
   required?: boolean
-  rules?: any[]
+  rules?: FormItemRule[]
   options?: Option[]
   /** 字典类型，优先级高于 options */
   dict?: Option[] | string
   /** 异步加载选项（如角色列表） */
   /** 动态加载选项；入参为当前表单模型，便于按其他字段联动 */
-  loadOptions?: (model?: Record<string, any>) => Promise<Option[]>
+  loadOptions?: (model?: CrudRow) => Promise<Option[]>
   /** 依赖的字段名，变化时重新加载选项并清空已选 */
   dependsOn?: string
   /** select 是否多选 */
@@ -69,21 +87,21 @@ export interface FormField {
   placeholder?: string
   span?: number
   only?: CrudMode
-  visible?: (model: any) => boolean
-  disabled?: (model: any, mode: CrudMode) => boolean
+  visible?: (model: CrudRow) => boolean
+  disabled?: (model: CrudRow, mode: CrudMode) => boolean
   tip?: string
-  defaultValue?: any
+  defaultValue?: unknown
 }
 
 export interface CrudApi {
-  list: (params: any) => Promise<any>
-  detail?: (id: string | number) => Promise<any>
-  create?: (data: any) => Promise<any>
-  update?: (data: any) => Promise<any>
-  remove?: (ids: string) => Promise<any>
+  list: (params: CrudRow) => Promise<ApiResult<PageData>>
+  detail?: (id: string | number) => Promise<ApiResult<CrudRow>>
+  create?: (data: CrudRow) => Promise<ApiResult<unknown>>
+  update?: (data: CrudRow) => Promise<ApiResult<unknown>>
+  remove?: (ids: string) => Promise<ApiResult<unknown>>
 }
 
-export interface CrudSchema<T = any> {
+export interface CrudSchema<T = CrudRow> {
   /** 唯一标识 */
   key: string
   api: CrudApi
@@ -98,5 +116,5 @@ export interface CrudSchema<T = any> {
   dialog?: { width?: string; labelWidth?: string }
   pagination?: { pageSize?: number }
   /** 提交前改写数据；返回 false 阻止提交 */
-  beforeSubmit?: (model: any, mode: CrudMode) => any | false | Promise<any | false>
+  beforeSubmit?: (model: CrudRow, mode: CrudMode) => CrudRow | false | Promise<CrudRow | false>
 }

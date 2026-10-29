@@ -1,22 +1,22 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { CrudMode, CrudSchema } from '@/types/crud'
+import type { CrudMode, CrudRow, CrudSchema } from '@/types/crud'
 
 export function useCrud(schema: CrudSchema) {
   const state = reactive({
     loading: false,
-    list: [] as any[],
+    list: [] as CrudRow[],
     total: 0,
     query: {
       pageNum: 1,
       pageSize: schema.pagination?.pageSize ?? 10
     },
-    searchModel: {} as Record<string, any>,
-    selected: [] as any[],
+    searchModel: {} as CrudRow,
+    selected: [] as CrudRow[],
     dialog: {
       visible: false,
       mode: 'create' as CrudMode,
       title: '',
-      model: {} as Record<string, any>
+      model: {} as CrudRow
     }
   })
 
@@ -24,8 +24,8 @@ export function useCrud(schema: CrudSchema) {
     state.searchModel[field.prop] = undefined
   }
 
-  function cleanParams(source: Record<string, any>) {
-    const params: Record<string, any> = {}
+  function cleanParams(source: CrudRow) {
+    const params: CrudRow = {}
     Object.keys(source).forEach((key) => {
       const value = source[key]
       if (value === '' || value === null || value === undefined) return
@@ -67,12 +67,12 @@ export function useCrud(schema: CrudSchema) {
     fetchList()
   }
 
-  function handleSelectionChange(rows: any[]) {
+  function handleSelectionChange(rows: CrudRow[]) {
     state.selected = rows
   }
 
   function defaultModel() {
-    const model: Record<string, any> = {}
+    const model: CrudRow = {}
     for (const field of schema.form ?? []) {
       model[field.prop] = field.defaultValue ?? undefined
     }
@@ -86,12 +86,12 @@ export function useCrud(schema: CrudSchema) {
     state.dialog.visible = true
   }
 
-  async function openEdit(row: any) {
+  async function openEdit(row: CrudRow) {
     state.dialog.mode = 'edit'
     state.dialog.title = '修改'
     let data = { ...row }
     if (schema.api.detail) {
-      const res = await schema.api.detail(row[schema.rowKey])
+      const res = await schema.api.detail(row[schema.rowKey] as string | number)
       data = res.data
     }
     state.dialog.model = { ...defaultModel(), ...data }
@@ -99,7 +99,7 @@ export function useCrud(schema: CrudSchema) {
   }
 
   async function submit() {
-    let payload: any = { ...state.dialog.model }
+    let payload: CrudRow = { ...state.dialog.model }
     if (schema.beforeSubmit) {
       const result = await schema.beforeSubmit(payload, state.dialog.mode)
       if (result === false) return
@@ -117,7 +117,7 @@ export function useCrud(schema: CrudSchema) {
     await fetchList()
   }
 
-  async function handleRemove(rows: any[]) {
+  async function handleRemove(rows: CrudRow[]) {
     if (!rows.length) {
       ElMessage.warning('请先选择数据')
       return

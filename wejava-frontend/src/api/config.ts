@@ -1,17 +1,17 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listConfig(params: any) {
-  return request.get<any, any>('/system/config/list', { params })
+  return http.get<PageData>('/system/config/list', { params })
 }
-export function getConfig(configId: string | number) {
-  return request.get<any, any>(`/system/config/${configId}`)
+export function getConfig(configId: string | number): Promise<import('@/utils/http').ApiResult<Record<string, unknown>>> {
+  return http.get(`/system/config/${configId}`)
 }
 export function createConfig(data: any) {
-  return request.post<any, any>('/system/config', data)
+  return http.post('/system/config', data)
 }
 export function updateConfig(data: any) {
-  return request.put<any, any>('/system/config', data)
+  return http.put('/system/config', data)
 }
 export function removeConfig(ids: string) {
-  return request.delete<any, any>(`/system/config/${ids}`)
+  return http.delete(`/system/config/${ids}`)
 }

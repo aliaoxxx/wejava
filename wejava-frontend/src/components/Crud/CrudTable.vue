@@ -1,34 +1,34 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import { hasPerm } from '@/utils/permission'
-import type { Column, CrudSchema } from '@/types/crud'
+import type { Column, CrudRow, CrudSchema } from '@/types/crud'
 import { dictOptions } from '@/hooks/useDict'
 
 const props = defineProps<{
   schema: CrudSchema
-  list: any[]
+  list: CrudRow[]
   loading: boolean
 }>()
 
 const emit = defineEmits<{
-  selectionChange: [rows: any[]]
-  edit: [row: any]
-  remove: [row: any]
+  selectionChange: [rows: CrudRow[]]
+  edit: [row: CrudRow]
+  remove: [row: CrudRow]
 }>()
 
 const prefix = props.schema.permissionPrefix
-const canEdit = (_row: any) =>
+const canEdit = (_row: CrudRow) =>
   props.schema.readonly ? false : !prefix ? true : hasPerm(`${prefix}:edit`)
-const canRemove = (_row: any) => (!prefix ? true : hasPerm(`${prefix}:remove`))
+const canRemove = (_row: CrudRow) => (!prefix ? true : hasPerm(`${prefix}:remove`))
 
-function display(row: any, col: Column) {
+function display(row: CrudRow, col: Column) {
   const value = row[col.prop]
   if (value === null || value === undefined) return '-'
-  if (col.dateFormat) return dayjs(value).format(col.dateFormat)
+  if (col.dateFormat) return dayjs(value as string | number | Date).format(col.dateFormat)
   return value
 }
 
-function dictLabel(row: any, col: Column) {
+function dictLabel(row: CrudRow, col: Column) {
   const value = row[col.prop]
   return dictOptions(col.dict)?.find((item) => String(item.value) === String(value))?.label ?? value
 }

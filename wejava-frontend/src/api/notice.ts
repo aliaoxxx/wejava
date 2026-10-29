@@ -1,17 +1,17 @@
-import request from '@/utils/request'
+import { http, type PageData } from '@/utils/http'
 
 export function listNotice(params: any) {
-  return request.get<any, any>('/system/notice/list', { params })
+  return http.get<PageData>('/system/notice/list', { params })
 }
 export function getNotice(noticeId: string | number) {
-  return request.get<any, any>(`/system/notice/${noticeId}`)
+  return http.get<Record<string, unknown>>(`/system/notice/${noticeId}`)
 }
 export function createNotice(data: any) {
-  return request.post<any, any>('/system/notice', data)
+  return http.post('/system/notice', data)
 }
 export function updateNotice(data: any) {
-  return request.put<any, any>('/system/notice', data)
+  return http.put('/system/notice', data)
 }
 export function removeNotice(ids: string) {
-  return request.delete<any, any>(`/system/notice/${ids}`)
+  return http.delete(`/system/notice/${ids}`)
 }
