@@ -17,9 +17,9 @@ const emit = defineEmits<{
 }>()
 
 const prefix = props.schema.permissionPrefix
-const canEdit = (row: any) =>
+const canEdit = (_row: any) =>
   props.schema.readonly ? false : !prefix ? true : hasPerm(`${prefix}:edit`)
-const canRemove = (row: any) => (!prefix ? true : hasPerm(`${prefix}:remove`))
+const canRemove = (_row: any) => (!prefix ? true : hasPerm(`${prefix}:remove`))
 
 function display(row: any, col: Column) {
   const value = row[col.prop]

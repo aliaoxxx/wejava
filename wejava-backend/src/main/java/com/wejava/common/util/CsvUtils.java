@@ -49,8 +49,25 @@ public final class CsvUtils {
         if (value == null) {
             return "";
         }
-        boolean needQuote = value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r");
-        String escaped = value.replace("\"", "\"\"");
+        // 先中和公式注入，再按 CSV 规则转义
+        String safe = neutralize(value);
+        boolean needQuote = safe.contains(",") || safe.contains("\"") || safe.contains("\n") || safe.contains("\r");
+        String escaped = safe.replace("\"", "\"\"");
         return needQuote ? "\"" + escaped + "\"" : escaped;
+    }
+
+    /**
+     * 防止 Excel 公式注入：以 = + - @ 或制表符/回车开头的单元格会被 Excel 当公式执行。
+     * 在前面加一个单引号，Excel 会按文本处理；普通值不受影响。
+     */
+    private static String neutralize(String value) {
+        if (value.isEmpty()) {
+            return value;
+        }
+        char first = value.charAt(0);
+        if (first == '=' || first == '+' || first == '-' || first == '@' || first == '\t' || first == '\r') {
+            return "'" + value;
+        }
+        return value;
     }
 }

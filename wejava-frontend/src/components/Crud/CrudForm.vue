@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
 import FieldItem from './FieldItem.vue'
 import type { CrudSchema, FormField } from '@/types/crud'
 

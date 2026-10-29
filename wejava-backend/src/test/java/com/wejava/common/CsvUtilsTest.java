@@ -65,4 +65,21 @@ class CsvUtilsTest {
         assertThat(new String("用户列表.csv".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8))
                 .isEqualTo("用户列表.csv");
     }
+
+    @Test
+    void 公式注入字符开头的字段会被中和() throws Exception {
+        String csv = render(List.of("a", "b", "c", "d"), List.of(Arrays.asList("=1+1", "+1", "-1", "@SUM(A1)")));
+
+        assertThat(csv).contains("'=1+1");
+        assertThat(csv).contains("'+1");
+        assertThat(csv).contains("'-1");
+        assertThat(csv).contains("'@SUM(A1)");
+    }
+
+    @Test
+    void 普通字段不会被加单引号() throws Exception {
+        String csv = render(List.of("a"), List.of(List.of("张三")));
+        assertThat(csv).contains("张三");
+        assertThat(csv).doesNotContain("'张三");
+    }
 }

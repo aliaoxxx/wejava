@@ -30,6 +30,10 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class DataScopeAspect {
 
+    /** create_by 存的是用户名，拼进 SQL 前必须过白名单 */
+    private static final java.util.regex.Pattern SAFE_USERNAME =
+            java.util.regex.Pattern.compile("^[a-zA-Z0-9_@.\\-]{1,64}$");
+
     private final SysRoleMapper roleMapper;
 
     @Around("@annotation(dataScope)")
@@ -100,7 +104,12 @@ public class DataScopeAspect {
 
     private String selfOnly(DataScope annotation, LoginSession session) {
         if (annotation.selfByCreateBy()) {
-            return "create_by = '" + session.getUsername().replace("'", "") + "'";
+            String username = session.getUsername();
+            // 这串内容会拼进 SQL，必须严格校验；不匹配说明数据异常，直接拒绝而不是放行
+            if (username == null || !SAFE_USERNAME.matcher(username).matches()) {
+                throw new IllegalStateException("用户名包含非法字符，无法生成数据权限条件");
+            }
+            return "create_by = '" + username + "'";
         }
         return annotation.userAlias() + ".user_id = " + Objects.requireNonNull(session.getUserId());
     }
