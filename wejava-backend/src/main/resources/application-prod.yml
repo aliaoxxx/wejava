@@ -5,11 +5,12 @@ server:
     # 这里配置用于 java -jar 内嵌容器的场景，两者保持一致。
     context-path: /prod/api
   tomcat:
+    # 后端管理系统的并发很低，默认值按小内存机器设定，大机器用环境变量放开
     threads:
-      max: 200
-      min-spare: 20
-    max-connections: 8192
-    accept-count: 200
+      max: ${TOMCAT_MAX_THREADS:40}
+      min-spare: ${TOMCAT_MIN_SPARE:5}
+    max-connections: ${TOMCAT_MAX_CONNECTIONS:1024}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:100}
 
 spring:
   datasource:
@@ -18,8 +19,9 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     hikari:
-      minimum-idle: 10
-      maximum-pool-size: 50
+      # 同理：连接池按实际并发配置，默认小，可用环境变量放大
+      minimum-idle: ${DB_POOL_MIN:2}
+      maximum-pool-size: ${DB_POOL_MAX:5}
       connection-timeout: 30000
       max-lifetime: 1800000
   data:

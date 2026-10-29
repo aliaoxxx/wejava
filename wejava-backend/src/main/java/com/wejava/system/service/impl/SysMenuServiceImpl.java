@@ -49,6 +49,14 @@ public class SysMenuServiceImpl implements SysMenuService {
         return buildRouters(menus, 0L, "", "");
     }
 
+    /** 顶层菜单的 path 带前导斜杠，作为 Layout 子路由时要去掉 */
+    private String stripSlash(String path) {
+        if (path == null) {
+            return "";
+        }
+        return path.startsWith("/") ? path.substring(1) : path;
+    }
+
     private List<RouterVO> buildRouters(List<SysMenu> menus, Long parentId, String parentName, String parentPath) {
         List<RouterVO> result = new ArrayList<>();
         menus.stream()
@@ -75,6 +83,25 @@ public class SysMenuServiceImpl implements SysMenuService {
                         if (!children.isEmpty()) {
                             router.setRedirect(fullPath + "/" + children.get(0).getPath());
                         }
+                    } else if (Objects.equals(menu.getParentId(), 0L)) {
+                        // 顶层菜单：必须包一层 Layout，否则会脱离框架渲染成独立页
+                        RouterVO wrapper = new RouterVO();
+                        // 父路径用菜单自身的路径，避免多个顶层菜单都用 "/" 造成路由冲突
+                        wrapper.setPath("/" + stripSlash(menu.getPath()));
+                        wrapper.setComponent("Layout");
+                        wrapper.setName(name + "Root");
+                        wrapper.setMeta(meta);
+
+                        RouterVO child = new RouterVO();
+                        // 子路由用空路径，渲染在父路径上（URL 仍是 /ai）
+                        child.setPath("");
+                        child.setComponent(menu.getComponent());
+                        child.setName(name);
+                        child.setMeta(meta);
+                        wrapper.setChildren(List.of(child));
+
+                        result.add(wrapper);
+                        return;
                     } else {
                         router.setComponent(menu.getComponent());
                     }

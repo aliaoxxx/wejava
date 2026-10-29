@@ -35,6 +35,11 @@ public class SecurityConfig {
         "/auth/login", "/auth/refresh", "/auth/captcha", "/ping", "/error", "/stream/**"
     };
 
+    /** 允许跨域的来源，逗号分隔，支持通配符。生产环境通过配置覆盖 */
+    @org.springframework.beans.factory.annotation.Value(
+            "${wejava.cors.allowed-origins:http://localhost:*,http://127.0.0.1:*}")
+    private String allowedOrigins;
+
     private final RestAuthEntryPoint authEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
@@ -74,7 +79,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedOriginPatterns(java.util.Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(text -> !text.isEmpty())
+                .toList());
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("X-Trace-Id"));

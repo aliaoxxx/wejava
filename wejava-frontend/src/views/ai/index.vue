@@ -124,9 +124,18 @@ function newSession() {
 
 <style scoped>
 .chat-card {
+  height: calc(100vh - 170px);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
+}
+
+/* 让卡片内容区变成弹性容器，否则底部按钮会溢出被裁掉 */
+.chat-card :deep(.el-card__body) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 .chat-header {
   display: flex;
@@ -140,6 +149,7 @@ function newSession() {
 }
 .chat-list {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 8px 4px;
 }
