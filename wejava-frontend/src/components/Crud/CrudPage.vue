@@ -4,6 +4,7 @@ import CrudTable from './CrudTable.vue'
 import CrudForm from './CrudForm.vue'
 import { hasPerm } from '@/utils/permission'
 import { loadSchemaDicts } from '@/hooks/useDict'
+import { useFillHeight } from '@/hooks/useFillHeight'
 
 import type { CrudInstance } from '@/hooks/useCrud'
 
@@ -18,6 +19,7 @@ onMounted(() => {
   loadSchemaDicts([...(schema.columns ?? []), ...(schema.form ?? [])] as any)
 })
 const formRef = ref()
+const { wrapRef: tableWrapRef, height: tableHeight } = useFillHeight()
 
 async function handleSubmit() {
   const ok = await formRef.value?.validate()
@@ -39,6 +41,7 @@ function onSizeChange(size: number) {
 </script>
 
 <template>
+  <div class="fill-page">
   <!-- 搜索区独立成卡片 -->
   <el-card v-if="schema.search?.length" shadow="never" class="crud-search-card">
     <CrudSearch
@@ -49,7 +52,7 @@ function onSizeChange(size: number) {
     />
   </el-card>
 
-  <el-card shadow="never">
+  <el-card shadow="never" class="fill-card">
     <div class="crud-toolbar">
       <el-button v-if="canAdd && !schema.readonly" type="primary" @click="crud.openCreate()">新增</el-button>
       <el-button
@@ -63,10 +66,12 @@ function onSizeChange(size: number) {
       <slot name="toolbar" />
     </div>
 
+    <div ref="tableWrapRef" class="fill-table-wrap">
     <CrudTable
       :schema="schema"
       :list="crud.list"
       :loading="crud.loading"
+      :table-height="tableHeight"
       @selection-change="crud.handleSelectionChange"
       @edit="crud.openEdit"
       @remove="(row: any) => crud.handleRemove([row])"
@@ -75,11 +80,12 @@ function onSizeChange(size: number) {
         <slot name="row-actions" :row="row" />
       </template>
     </CrudTable>
+    </div>
 
     <el-pagination
       v-model:current-page="crud.query.pageNum"
       v-model:page-size="crud.query.pageSize"
-      class="crud-pagination"
+      class="fill-pager"
       background
       layout="total, sizes, prev, pager, next, jumper"
       :total="crud.total"
@@ -96,6 +102,7 @@ function onSizeChange(size: number) {
       @submit="handleSubmit"
     />
   </el-card>
+  </div>
 </template>
 
 <style scoped>
@@ -107,8 +114,5 @@ function onSizeChange(size: number) {
   gap: 8px;
   margin: 12px 0;
 }
-.crud-pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
+
 </style>
