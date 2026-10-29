@@ -99,12 +99,23 @@ public class MessageServiceImpl implements MessageService {
         if (userIds.isEmpty()) {
             throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "该范围内没有可接收的用户");
         }
-        return deliver(form.getTitle(), form.getContent(), type, level, form.getLink(), null, userIds);
+        return doDeliver(form.getTitle(), form.getContent(), type, level, form.getLink(), null, userIds);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long deliver(
+            String title, String content, int msgType, int level, String link, Long sourceId, List<Long> userIds) {
+        return doDeliver(title, content, msgType, level, link, sourceId, userIds);
+    }
+
+    /**
+     * 实际的落库与推送。
+     * <p>
+     * 必须是 private 且不带 @Transactional：三个 public 入口各自已经是事务边界，
+     * 在这里再加事务注解会因为「自调用不走代理」而失效（Spring AOP 的经典陷阱）。
+     */
+    private Long doDeliver(
             String title, String content, int msgType, int level, String link, Long sourceId, List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return null;
@@ -134,6 +145,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long deliverToAll(String title, String content, int msgType, int level, String link, Long sourceId) {
         List<Long> userIds = userMapper
                 .selectList(Wrappers.<SysUser>lambdaQuery()
@@ -142,7 +154,7 @@ public class MessageServiceImpl implements MessageService {
                 .stream()
                 .map(SysUser::getUserId)
                 .toList();
-        return deliver(title, content, msgType, level, link, sourceId, userIds);
+        return doDeliver(title, content, msgType, level, link, sourceId, userIds);
     }
 
     private MessageVO toVO(SysMessage message, Integer readFlag) {

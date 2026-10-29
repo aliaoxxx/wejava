@@ -64,11 +64,18 @@ public class LoginServiceImpl implements LoginService {
         loginAttemptStore.clearFail(form.getUsername());
 
         AuthUser authUser = (AuthUser) authentication.getPrincipal();
-        LoginSession session = authUser.getSession();
+        LoginSession session = null;
+        if (authUser != null) {
+            session = authUser.getSession();
+        }
         LoginVO vo = tokenService.issue(session);
 
-        loginLogService.record(session.getUsername(), ip, userAgent, true, "登录成功");
-        log.info("登录成功 userId={}, username={}", session.getUserId(), session.getUsername());
+        if (session != null) {
+            loginLogService.record(session.getUsername(), ip, userAgent, true, "登录成功");
+        }
+        if (session != null) {
+            log.info("登录成功 userId={}, username={}", session.getUserId(), session.getUsername());
+        }
         return vo;
     }
 }
