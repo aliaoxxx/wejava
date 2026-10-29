@@ -34,5 +34,5 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     void insertRoleDepts(@Param("roleId") Long roleId, @Param("deptIds") List<Long> deptIds);
 
     /** 逻辑删除并改名，避免 uk_role_key 冲突 */
-    int softDeleteRole(@Param("roleId") Long roleId);
+    void softDeleteRole(@Param("roleId") Long roleId);
 }
