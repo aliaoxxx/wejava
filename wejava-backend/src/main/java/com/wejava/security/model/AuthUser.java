@@ -2,6 +2,9 @@ package com.wejava.security.model;
 
 import com.wejava.security.permission.AuthorityResolver;
 import java.util.Collection;
+import java.util.Objects;
+import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -15,8 +18,12 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public class AuthUser implements UserDetails {
 
+    @Getter
     private final transient LoginSession session;
+
     private final transient String password;
+
+    @Getter
     private final transient Integer status;
 
     /** 从 Redis 会话还原时使用：此时不需要密码，账号状态视为正常 */
@@ -26,17 +33,10 @@ public class AuthUser implements UserDetails {
 
     /** 登录认证时使用 */
     public AuthUser(LoginSession session, String password, Integer status) {
-        this.session = session;
+        // UserDetails#getUsername 约定非空，这里直接拒绝 null 会话，比返回 null 更安全
+        this.session = Objects.requireNonNull(session, "session 不能为空");
         this.password = password;
         this.status = status;
-    }
-
-    public LoginSession getSession() {
-        return session;
-    }
-
-    public Integer getStatus() {
-        return status;
     }
 
     @Override
@@ -45,28 +45,28 @@ public class AuthUser implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
+    public @Nullable String getPassword() {
         return password;
     }
 
     @Override
     public String getUsername() {
-        return session == null ? null : session.getUsername();
+        return session.getUsername();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return UserDetails.super.isAccountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return UserDetails.super.isAccountNonLocked();
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return UserDetails.super.isCredentialsNonExpired();
     }
 
     @Override
