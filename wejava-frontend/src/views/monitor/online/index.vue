@@ -51,8 +51,8 @@ onMounted(fetchList)
     </el-table>
 
     <el-pagination class="pager" background layout="total, prev, pager, next" :total="total"
-      :current-page="query.pageNum" :page-size="query.pageSize"
-      @current-change="(p: number) => { query.pageNum = p; fetchList() }" />
+      v-model:current-page="query.pageNum" :page-size="query.pageSize"
+      @current-change="() => fetchList()" />
   </el-card>
 </template>
 

@@ -48,7 +48,7 @@ export function useCrud(schema: CrudSchema) {
     try {
       const res = await schema.api.list({ ...state.query, ...cleanParams(state.searchModel) })
       state.list = res.data?.list ?? []
-      state.total = res.data?.total ?? 0
+      state.total = Number(res.data?.total ?? 0)
     } finally {
       state.loading = false
     }

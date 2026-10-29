@@ -77,12 +77,12 @@ function onSizeChange(size: number) {
     </CrudTable>
 
     <el-pagination
+      v-model:current-page="crud.query.pageNum"
+      v-model:page-size="crud.query.pageSize"
       class="crud-pagination"
       background
       layout="total, sizes, prev, pager, next, jumper"
       :total="crud.total"
-      :current-page="crud.query.pageNum"
-      :page-size="crud.query.pageSize"
       :page-sizes="[10, 20, 50, 100]"
       @current-change="onPageChange"
       @size-change="onSizeChange"

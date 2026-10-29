@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * 分页结果。前端约定：{ total, list }
@@ -12,7 +13,9 @@ import lombok.Data;
 @Data
 public class PageResult<T> implements Serializable {
 
+    @JsonSerialize(using = NumberLongSerializer.class)
     private long total;
+
     private List<T> list;
 
     public static <T> PageResult<T> of(IPage<T> page) {

@@ -214,8 +214,8 @@ onMounted(fetchTypes)
         </el-table>
 
         <el-pagination class="pager" background layout="total, prev, pager, next" :total="dataTotal"
-          :current-page="dataQuery.pageNum" :page-size="dataQuery.pageSize"
-          @current-change="(p: number) => { dataQuery.pageNum = p; fetchData() }" />
+          v-model:current-page="dataQuery.pageNum" :page-size="dataQuery.pageSize"
+          @current-change="() => fetchData()" />
       </el-card>
     </el-col>
   </el-row>
