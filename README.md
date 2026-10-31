@@ -246,6 +246,10 @@ See [docs/07-部署方案.md](docs/07-部署方案.md) for the WAR + Tomcat setu
 
 For a public instance, read [deploy/README.md](deploy/README.md): three deployment paths (VPS / Render / Alibaba Cloud), HTTPS, and a security baseline for public demos.
 
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+
 ## License
 
 [MIT](LICENSE) © 2026 ZHAO ZHENYU

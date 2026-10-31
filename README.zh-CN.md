@@ -247,6 +247,10 @@ WAR + Tomcat 方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（目�
 
 放公网请看 [deploy/README.md](deploy/README.md)：三条部署路径（VPS / Render / 阿里云）、HTTPS，以及公网演示的安全底线。
 
+## 参与贡献
+
+欢迎提交 PR，流程见 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题请看 [SECURITY.md](SECURITY.md)。
+
 ## 许可
 
 [MIT](LICENSE) © 2026 ZHAO ZHENYU

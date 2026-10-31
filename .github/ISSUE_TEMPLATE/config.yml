@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全问题 / Security issue
+    url: https://github.com/aliaoxxx/wejava/security/policy
+    about: 请不要公开提安全问题，用 Security 标签页私密上报
+  - name: 使用问题 / Questions
+    url: https://github.com/aliaoxxx/wejava/discussions
+    about: 部署、配置、用法类问题请走 Discussions

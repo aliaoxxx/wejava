@@ -14,7 +14,7 @@ Three paths below, ordered by effort.
 | Host | Linux with Docker (Ubuntu 22.04 / Debian 12 recommended), 2 vCPU / 4 GB RAM minimum |
 | DNS | One A record pointing at the server's public IP |
 | Ports | Open **80 / 443**; **never** expose 3300 directly |
-| Filing | **Mainland-China hosts require an ICP filing**, otherwise 80/443 is blocked by the cloud provider (we hit exactly this with `example.com`) |
+| Filing | **Mainland-China hosts require an ICP filing**, otherwise 80/443 returns the provider's `Non-compliance ICP Filing` page |
 
 Change the default credentials first:
 
