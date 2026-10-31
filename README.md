@@ -174,23 +174,27 @@ REDIS_HOST  REDIS_PORT  REDIS_PASSWORD
 >
 > To skip the captcha while developing locally, start with `CAPTCHA_ENABLED=false mvn spring-boot:run`.
 
-Flyway seeds 61 menus, 2 roles and 2 accounts (`admin` as super admin, `tester` as a regular user).
+Flyway seeds 64 menus, 2 roles and 1 account (`admin`, super admin). Create extra accounts from the user management page.
 
 ## Project Structure
 
 ```
 wejava/
+├── docker-compose.yml        one-command demo stack (MySQL + Redis + backend + frontend)
+├── deploy/                   nginx config used by the demo image
 ├── docs/                     design documents (Chinese)
-│   ├── 01-数据库设计.md       DDL and seed data for the 17 tables
+│   ├── 01-数据库设计.md       DDL and seed data for the 20 tables
 │   ├── 02-认证与权限设计.md    authentication and authorization
 │   ├── 03-接口设计.md          API design
 │   ├── 04-前端设计.md          frontend design
 │   ├── 05-开发规范.md          layering, file granularity, naming
 │   ├── 06-前端配置驱动设计.md   schema-driven CRUD
 │   ├── 07-部署方案.md          WAR + Nginx deployment
+│   ├── screenshots/            screenshots referenced by the README
 │   └── 避坑清单.md             pitfalls checklist
 ├── wejava-backend/           Java backend (package com.wejava)
 │   └── src/main/java/com/wejava/
+│       ├── ai/               AI chat: client / service / controller / mapper
 │       ├── common/           response envelope, exceptions, AOP, utilities
 │       ├── security/         auth infrastructure (must not depend on system)
 │       └── system/           business: controller / service / mapper / converter / model

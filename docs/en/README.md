@@ -11,7 +11,7 @@ The authentication scheme is **self-managed JWT + Redis session whitelist** (no 
 
 | Document | Contents | Chinese |
 |---|---|---|
-| [01-database-design](01-database-design.md) | Complete DDL for 17 tables, indexes, data permission columns, seed data (including messaging) | [01-数据库设计](../01-数据库设计.md) |
+| [01-database-design](01-database-design.md) | Complete DDL for 20 tables, indexes, data permission columns, seed data (including messaging) | [01-数据库设计](../01-数据库设计.md) |
 | [02-auth-and-permissions](02-auth-and-permissions.md) | Login sequence, token structure, Redis conventions, filter chain, RBAC, data permission | [02-认证与权限设计](../02-认证与权限设计.md) |
 | [03-api-design](03-api-design.md) | Unified response body, error codes, full endpoint list, permission string table | [03-接口设计](../03-接口设计.md) |
 | [04-frontend-design](04-frontend-design.md) | Directory structure, dynamic routes, axios refresh queue, permission directive | [04-前端设计](../04-前端设计.md) |
@@ -257,7 +257,7 @@ Covers 14 cases: login, authorization, tampered signature, token type confusion,
 
 | Stage | Contents | Status |
 |---|---|---|
-| M1 | Project skeleton, unified response, exceptions, traceId, Flyway, 15 tables | ✅ Done |
+| M1 | Project skeleton, unified response, exceptions, traceId, Flyway, 15 tables (expanded to 20 by later migrations) | ✅ Done |
 | M2 | Authentication: login/refresh/logout/captcha/brute-force protection/Redis session/RBAC wiring | ✅ Done |
 | M2.5 | Development conventions, BaseEntity/PageQuery/audit fill, MapStruct, Spotless | ✅ Done |
 | M3-1 | Backend RBAC: user/role/menu CRUD + dynamic route endpoints | ✅ Done |
@@ -266,4 +266,4 @@ Covers 14 cases: login, authorization, tampered signature, token type confusion,
 | M4 | Department/post/dictionary/parameter/notice | ✅ Done |
 | M5 | Logs (operation/login) + online users + monitoring | ✅ Done |
 | M6 | Data permission, rate limiting, export | ✅ Done |
-| M7 | Frontend layout, multi-tab, theme, packaging and deployment | ✅ Done (deployment verification pending a server) |
+| M7 | Frontend layout, multi-tab, theme, packaging and deployment | ✅ Done (verified in deployment) |

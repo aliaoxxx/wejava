@@ -3,7 +3,8 @@
 # 01 · Database Design
 
 > MySQL 8.4 LTS / InnoDB / `utf8mb4` / `utf8mb4_0900_ai_ci` / time zone `Asia/Shanghai`
-> All tables are managed by Flyway: `V1__init_schema.sql` creates the schema, `V2__init_data.sql` seeds the data.
+> All tables are managed by Flyway: `V1__init_schema.sql` creates the schema, `V2__init_data.sql` seeds the data,
+> and `V3`–`V14` apply incremental changes (column widening, messaging, AI, foreign keys, extra menus).
 
 ---
 
@@ -414,6 +415,60 @@ CREATE TABLE `sys_message_user` (
 
 **Why two tables**: the body is stored once while each recipient keeps its own read state.
 Editing a notice updates what every recipient sees, because the body is never copied into inboxes.
+
+---
+
+### AI Assistant (added in V7 / V10)
+
+`sys_ai_session` and `sys_ai_message` hold conversation history; `sys_ai_config` holds model
+parameters plus the encrypted API key.
+
+Configuration lives in its own table (V10) because a key must not sit next to ordinary
+settings — anyone with `system:config:list` can read `sys_config` in plain text, while AI
+configuration is admin-only.
+
+```sql
+CREATE TABLE `sys_ai_session` (
+  `session_id`  bigint       NOT NULL AUTO_INCREMENT COMMENT 'session id',
+  `user_id`     bigint       NOT NULL COMMENT 'owner',
+  `title`       varchar(100)          DEFAULT NULL COMMENT 'title (first question)',
+  `model`       varchar(64)           DEFAULT NULL COMMENT 'model name',
+  `create_time` datetime(3)           DEFAULT NULL,
+  `update_time` datetime(3)           DEFAULT NULL,
+  PRIMARY KEY (`session_id`),
+  KEY `idx_ai_session_user` (`user_id`, `update_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI session';
+
+CREATE TABLE `sys_ai_message` (
+  `message_id`        bigint      NOT NULL AUTO_INCREMENT,
+  `session_id`        bigint      NOT NULL COMMENT 'session id',
+  `role`              varchar(16) NOT NULL COMMENT 'user / assistant',
+  `content`           mediumtext           DEFAULT NULL COMMENT 'message body',
+  `prompt_tokens`     int                  DEFAULT NULL COMMENT 'input tokens',
+  `completion_tokens` int                  DEFAULT NULL COMMENT 'output tokens',
+  `duration_ms`       bigint               DEFAULT NULL COMMENT 'latency',
+  `create_time`       datetime(3)          DEFAULT NULL,
+  PRIMARY KEY (`message_id`),
+  KEY `idx_ai_message_session` (`session_id`, `message_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI message';
+
+CREATE TABLE `sys_ai_config` (
+  `ai_config_id` bigint       NOT NULL AUTO_INCREMENT,
+  `provider`     varchar(32)  NOT NULL DEFAULT 'deepseek' COMMENT 'provider',
+  `model`        varchar(64)  NOT NULL COMMENT 'model name',
+  `base_url`     varchar(200) NOT NULL COMMENT 'endpoint',
+  `api_key`      text                  DEFAULT NULL COMMENT 'key (AES-GCM encrypted)',
+  `temperature`  decimal(3, 2) NOT NULL DEFAULT 0.70 COMMENT 'temperature',
+  `max_tokens`   int          NOT NULL DEFAULT 4096 COMMENT 'max output tokens',
+  `enabled`      tinyint      NOT NULL DEFAULT 1 COMMENT 'enabled',
+  `update_by`    varchar(64)           DEFAULT NULL,
+  `update_time`  datetime(3)           DEFAULT NULL,
+  PRIMARY KEY (`ai_config_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI config';
+```
+
+**Why the key is encrypted**: `api_key` is encrypted with AES-GCM using `AI_CONFIG_SECRET`;
+a dumped table yields no plaintext, and the API only returns a mask (`xxxx****xxxx`).
 
 ---
 

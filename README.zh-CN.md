@@ -175,23 +175,27 @@ REDIS_HOST  REDIS_PORT  REDIS_PASSWORD
 >
 > 本地调试若不想输验证码，用 `CAPTCHA_ENABLED=false mvn spring-boot:run` 启动。
 
-Flyway 初始化后会写入 61 个菜单、2 个角色、2 个账号（`admin` 超管、`tester` 普通用户）。
+Flyway 初始化后会写入 64 个菜单、2 个角色、1 个账号（`admin` 超管）。其他账号可在「用户管理」页创建。
 
 ## 目录结构
 
 ```
 wejava/
+├── docker-compose.yml        一键演示编排（MySQL + Redis + 后端 + 前端）
+├── deploy/                   演示镜像使用的 Nginx 配置
 ├── docs/                     设计文档
-│   ├── 01-数据库设计.md        17 张表的 DDL 与初始化数据
+│   ├── 01-数据库设计.md        20 张表的 DDL 与初始化数据
 │   ├── 02-认证与权限设计.md
 │   ├── 03-接口设计.md
 │   ├── 04-前端设计.md
 │   ├── 05-开发规范.md          分层、文件粒度、命名
 │   ├── 06-前端配置驱动设计.md
 │   ├── 07-部署方案.md          WAR + Nginx
+│   ├── screenshots/           README 引用的截图
 │   └── 避坑清单.md
 ├── wejava-backend/           Java 后端（包名 com.wejava）
 │   └── src/main/java/com/wejava/
+│       ├── ai/               AI 对话：client / service / controller / mapper
 │       ├── common/           统一响应、异常、AOP、工具
 │       ├── security/         认证基础设施（不得依赖 system）
 │       └── system/           业务：controller / service / mapper / converter / model

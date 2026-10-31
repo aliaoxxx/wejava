@@ -11,7 +11,7 @@
 
 | 文档 | 内容 | English |
 |---|---|---|
-| [01-数据库设计](01-数据库设计.md) | 17 张表完整 DDL、索引、数据权限字段、初始化数据（含站内消息） | [01-database-design](en/01-database-design.md) |
+| [01-数据库设计](01-数据库设计.md) | 20 张表完整 DDL、索引、数据权限字段、初始化数据（含站内消息） | [01-database-design](en/01-database-design.md) |
 | [02-认证与权限设计](02-认证与权限设计.md) | 登录时序、Token 结构、Redis 规范、过滤器链、RBAC、数据权限 | [02-auth-and-permissions](en/02-auth-and-permissions.md) |
 | [03-接口设计](03-接口设计.md) | 统一返回体、错误码、全部接口清单、权限字符表 | [03-api-design](en/03-api-design.md) |
 | [04-前端设计](04-前端设计.md) | 目录结构、动态路由、axios 刷新队列、权限指令 | [04-frontend-design](en/04-frontend-design.md) |
@@ -256,7 +256,7 @@ cd wejava-backend
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| M1 | 工程骨架、统一返回、异常、traceId、Flyway、15 张表 | ✅ 完成 |
+| M1 | 工程骨架、统一返回、异常、traceId、Flyway、15 张表（后续迁移扩展到 20 张） | ✅ 完成 |
 | M2 | 认证：登录/刷新/登出/验证码/防爆破/Redis 会话/RBAC 装配 | ✅ 完成 |
 | M2.5 | 开发规范、BaseEntity/PageQuery/审计填充、MapStruct、Spotless | ✅ 完成 |
 | M3-1 | 后端 RBAC：用户/角色/菜单 CRUD + 动态路由接口 | ✅ 完成 |
@@ -265,4 +265,4 @@ cd wejava-backend
 | M4 | 部门/岗位/字典/参数/公告 | ✅ 完成 |
 | M5 | 日志（操作/登录）+ 在线用户 + 监控 | ✅ 完成 |
 | M6 | 数据权限、限流、导出 | ✅ 完成 |
-| M7 | 前端布局、多页签、主题、打包部署 | ✅ 完成（部署验证待服务器） |
+| M7 | 前端布局、多页签、主题、打包部署 | ✅ 完成（已部署验证） |
