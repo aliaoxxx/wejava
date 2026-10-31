@@ -6,6 +6,62 @@ English | [简体中文](README.zh-CN.md)
 
 认证采用**自建 JWT + Redis 会话白名单**，不引入 OAuth2 授权服务器，链路短、无额外组件。
 
+[![CI](https://github.com/aliaoxxx/wejava/actions/workflows/ci.yml/badge.svg)](https://github.com/aliaoxxx/wejava/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](#技术栈)
+[![Vue](https://img.shields.io/badge/Vue-3.5-42b883.svg)](#技术栈)
+
+## 界面预览
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="登录页" /></td>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="首页" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/user-list.png" alt="用户管理（配置驱动 CRUD）" /></td>
+    <td width="50%"><img src="docs/screenshots/monitor.png" alt="服务监控" /></td>
+  </tr>
+</table>
+
+## 30 秒启动
+
+不需要安装 JDK / Node / MySQL / Redis，一条命令拉起全部服务：
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose up -d
+open http://localhost:3300/     # Windows 用 start http://localhost:3300/
+```
+
+用 `admin / admin123` 登录。
+
+> 首次启动会拉取镜像并在容器内编译前后端（**约 5–10 分钟**，取决于网络）。
+> 之后 `docker compose up -d` 大约 **20 秒**就能就绪。
+
+首次启动会自动建库、建表并写入种子数据（Flyway），**不需要手工执行任何 SQL**。
+
+| 服务 | 作用 |
+|---|---|
+| `frontend` | Nginx 托管前端（宿主机 3300），并把 `/api` 反代到后端 |
+| `backend` | Spring Boot 应用（`docker` profile，上下文 `/api`） |
+| `mysql` | MySQL 8.4，数据持久化在命名卷 `mysql-data` |
+| `redis` | Redis 7，只在容器网络内可见 |
+
+常用命令：
+
+```bash
+docker compose logs -f backend   # 跟随后端日志
+docker compose ps                # 查看健康状态
+docker compose down              # 停止（保留数据）
+docker compose down -v           # 停止并删除数据卷，下次启动是全新环境
+```
+
+改端口、密码或密钥：`cp .env.example .env` 后编辑，再 `docker compose up -d`。
+
+> MySQL 与 Redis 默认不映射到宿主机端口（只走容器网络）。需要从本机连库调试时，
+> 在 `docker-compose.yml` 里给对应服务加 `ports: ["127.0.0.1:3307:3306"]` 即可。
+
 ## 特性
 
 **认证与安全**
@@ -60,39 +116,24 @@ English | [简体中文](README.zh-CN.md)
 >
 > 虚拟线程需 JDK 21，当前使用 JDK 17，未启用。
 
-## Docker 一键启动（推荐）
+## 文档
 
-不需要安装 JDK / Node / MySQL / Redis，一条命令拉起全部服务：
+设计文档提供中英两版：
 
-```bash
-git clone https://github.com/aliaoxxx/wejava.git && cd wejava
-docker compose up -d
-```
+- **中文** — [docs/README.md](docs/README.md)
+- **English** — [docs/en/README.md](docs/en/README.md)
 
-打开 <http://localhost:3300/>，用 `admin / admin123` 登录。
+下表为中文原文，每篇在 `docs/en/` 下都有对应英文版：
 
-首次启动会自动建库、建表并写入种子数据（Flyway），**不需要手工执行任何 SQL**。
-
-| 服务 | 作用 |
-|---|---|
-| `frontend` | Nginx 托管前端（宿主机 3300），并把 `/api` 反代到后端 |
-| `backend` | Spring Boot 应用（`docker` profile，上下文 `/api`） |
-| `mysql` | MySQL 8.4，数据持久化在命名卷 `mysql-data` |
-| `redis` | Redis 7，只在容器网络内可见 |
-
-常用命令：
-
-```bash
-docker compose logs -f backend   # 跟随后端日志
-docker compose ps                # 查看健康状态
-docker compose down              # 停止（保留数据）
-docker compose down -v           # 停止并删除数据卷，下次启动是全新环境
-```
-
-改端口、密码或密钥：`cp .env.example .env` 后编辑，再 `docker compose up -d`。
-
-> MySQL 与 Redis 默认不映射到宿主机端口（只走容器网络）。需要从本机连库调试时，
-> 在 `docker-compose.yml` 里给对应服务加 `ports: ["127.0.0.1:3307:3306"]` 即可。
+- [数据库设计](docs/01-数据库设计.md)
+- [认证与权限设计](docs/02-认证与权限设计.md)
+- [接口设计](docs/03-接口设计.md)
+- [前端设计](docs/04-前端设计.md)
+- [开发规范](docs/05-开发规范.md)
+- [前端配置驱动设计](docs/06-前端配置驱动设计.md)
+- [部署方案](docs/07-部署方案.md)
+- [避坑清单](docs/避坑清单.md)
+- [演示脚本](docs/demo-script.md)
 
 ## 环境要求
 
@@ -195,24 +236,6 @@ pnpm build
 所以 `prod#api.war` 的上下文就是 `/prod/api`。
 
 完整方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（目录规划、Nginx 配置、发版回滚）。
-
-## 文档
-
-设计文档提供中英两版：
-
-- **中文** — [docs/README.md](docs/README.md)
-- **English** — [docs/en/README.md](docs/en/README.md)
-
-下表为中文原文，每篇在 `docs/en/` 下都有对应英文版：
-
-- [数据库设计](docs/01-数据库设计.md)
-- [认证与权限设计](docs/02-认证与权限设计.md)
-- [接口设计](docs/03-接口设计.md)
-- [前端设计](docs/04-前端设计.md)
-- [开发规范](docs/05-开发规范.md)
-- [前端配置驱动设计](docs/06-前端配置驱动设计.md)
-- [部署方案](docs/07-部署方案.md)
-- [避坑清单](docs/避坑清单.md)
 
 ## 许可
 

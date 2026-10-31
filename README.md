@@ -6,6 +6,62 @@ An admin dashboard framework built on **Spring Boot 4.1 + Spring Security 7.1 + 
 
 Authentication uses a **self-managed JWT with a Redis session whitelist** — no OAuth2 authorization server, which keeps the auth path short and removes a moving part.
 
+[![CI](https://github.com/aliaoxxx/wejava/actions/workflows/ci.yml/badge.svg)](https://github.com/aliaoxxx/wejava/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](#tech-stack)
+[![Vue](https://img.shields.io/badge/Vue-3.5-42b883.svg)](#tech-stack)
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Sign in" /></td>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="Dashboard" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/user-list.png" alt="User management (schema-driven CRUD)" /></td>
+    <td width="50%"><img src="docs/screenshots/monitor.png" alt="Server monitor" /></td>
+  </tr>
+</table>
+
+## Quick Start (30 seconds)
+
+No JDK / Node / MySQL / Redis required — one command starts everything:
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose up -d
+open http://localhost:3300/     # Windows: start http://localhost:3300/
+```
+
+Sign in with `admin / admin123`.
+
+> The first run pulls images and compiles the backend/frontend inside containers (**5–10 minutes** depending on network).
+> After that, `docker compose up -d` is ready in about **20 seconds**.
+
+The database, tables and seed data are created automatically by Flyway on first start — **no manual SQL needed**.
+
+| Service | Role |
+|---|---|
+| `frontend` | Nginx serving the SPA on host port 3300, proxying `/api` to the backend |
+| `backend` | Spring Boot app (`docker` profile, context path `/api`) |
+| `mysql` | MySQL 8.4, data persisted in the `mysql-data` volume |
+| `redis` | Redis 7, reachable only inside the compose network |
+
+Common commands:
+
+```bash
+docker compose logs -f backend   # follow backend logs
+docker compose ps                # health status
+docker compose down              # stop, keep data
+docker compose down -v           # stop and drop volumes — next start is a clean environment
+```
+
+To change ports, passwords or secrets: `cp .env.example .env`, edit, then `docker compose up -d`.
+
+> MySQL and Redis are not published to the host. To connect from your machine for debugging,
+> add `ports: ["127.0.0.1:3307:3306"]` to the service in `docker-compose.yml`.
+
 ## Features
 
 **Authentication & security**
@@ -60,39 +116,24 @@ Authentication uses a **self-managed JWT with a Redis session whitelist** — no
 >
 > Virtual threads require JDK 21. This project targets JDK 17 and does not use them.
 
-## Docker (recommended)
+## Documentation
 
-No JDK / Node / MySQL / Redis required — one command starts everything:
+Design documents are available in both languages:
 
-```bash
-git clone https://github.com/aliaoxxx/wejava.git && cd wejava
-docker compose up -d
-```
+- **English** — [docs/en/README.md](docs/en/README.md)
+- **中文** — [docs/README.md](docs/README.md)
 
-Open <http://localhost:3300/> and sign in with `admin / admin123`.
+The table below lists the Chinese originals; every one has an English counterpart under `docs/en/`.
 
-The database, tables and seed data are created automatically by Flyway on first start — **no manual SQL needed**.
-
-| Service | Role |
-|---|---|
-| `frontend` | Nginx serving the SPA on host port 3300, proxying `/api` to the backend |
-| `backend` | Spring Boot app (`docker` profile, context path `/api`) |
-| `mysql` | MySQL 8.4, data persisted in the `mysql-data` volume |
-| `redis` | Redis 7, reachable only inside the compose network |
-
-Common commands:
-
-```bash
-docker compose logs -f backend   # follow backend logs
-docker compose ps                # health status
-docker compose down              # stop, keep data
-docker compose down -v           # stop and drop volumes — next start is a clean environment
-```
-
-To change ports, passwords or secrets: `cp .env.example .env`, edit, then `docker compose up -d`.
-
-> MySQL and Redis are not published to the host. To connect from your machine for debugging,
-> add `ports: ["127.0.0.1:3307:3306"]` to the service in `docker-compose.yml`.
+- [数据库设计](docs/01-数据库设计.md) — database design
+- [认证与权限设计](docs/02-认证与权限设计.md) — authentication and authorization
+- [接口设计](docs/03-接口设计.md) — API design
+- [前端设计](docs/04-前端设计.md) — frontend design
+- [开发规范](docs/05-开发规范.md) — development conventions
+- [前端配置驱动设计](docs/06-前端配置驱动设计.md) — schema-driven frontend
+- [部署方案](docs/07-部署方案.md) — deployment
+- [避坑清单](docs/避坑清单.md) — pitfalls checklist
+- [演示脚本](docs/demo-script.md) — 60-second demo storyboard
 
 ## Requirements
 
@@ -194,24 +235,6 @@ Path convention: `/prod/` in production, `/dev/` in development. Tomcat resolves
 in a WAR filename to `/`, so `prod#api.war` is served under `/prod/api`.
 
 See [docs/07-部署方案.md](docs/07-部署方案.md) for the full setup (directory layout, Nginx configuration, release and rollback).
-
-## Documentation
-
-Design documents are available in both languages:
-
-- **English** — [docs/en/README.md](docs/en/README.md)
-- **中文** — [docs/README.md](docs/README.md)
-
-The table below lists the Chinese originals; every one has an English counterpart under `docs/en/`.
-
-- [数据库设计](docs/01-数据库设计.md) — database design
-- [认证与权限设计](docs/02-认证与权限设计.md) — authentication and authorization
-- [接口设计](docs/03-接口设计.md) — API design
-- [前端设计](docs/04-前端设计.md) — frontend design
-- [开发规范](docs/05-开发规范.md) — development conventions
-- [前端配置驱动设计](docs/06-前端配置驱动设计.md) — schema-driven frontend
-- [部署方案](docs/07-部署方案.md) — deployment
-- [避坑清单](docs/避坑清单.md) — pitfalls checklist
 
 ## License
 
