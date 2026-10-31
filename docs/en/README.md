@@ -19,6 +19,7 @@ The authentication scheme is **self-managed JWT + Redis session whitelist** (no 
 | [06-schema-driven-crud](06-schema-driven-crud.md) | CRUD schema, useCrud, three-layer strategy, rollout order | [06-前端配置驱动设计](../06-前端配置驱动设计.md) |
 | [07-deployment](07-deployment.md) | WAR + Nginx deployment, path prefix, release and rollback | [07-部署方案](../07-部署方案.md) |
 | [pitfalls](pitfalls.md) | Risk items to check one by one before going live | [避坑清单](../避坑清单.md) |
+| [deployment guide](../../deploy/en/README.md) | Three paths: VPS / Render / Alibaba Cloud, HTTPS, security baseline | [部署指南](../../deploy/README.md) |
 | [demo-script](demo-script.md) | 60-second recording storyboard: open → sign in → create user → monitor | [演示脚本](../demo-script.md) |
 
 ---

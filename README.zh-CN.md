@@ -239,7 +239,9 @@ pnpm build
 路径约定：生产 `/prod/`，开发 `/dev/`。WAR 文件名中的 `#` 会被 Tomcat 解析为 `/`，
 所以 `prod#api.war` 的上下文就是 `/prod/api`。
 
-完整方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（目录规划、Nginx 配置、发版回滚）。
+WAR + Tomcat 方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（目录规划、Nginx 配置、发版回滚）。
+
+放公网请看 [deploy/README.md](deploy/README.md)：三条部署路径（VPS / Render / 阿里云）、HTTPS，以及公网演示的安全底线。
 
 ## 许可
 

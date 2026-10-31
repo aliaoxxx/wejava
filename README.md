@@ -238,7 +238,9 @@ pnpm build
 Path convention: `/prod/` in production, `/dev/` in development. Tomcat resolves the `#`
 in a WAR filename to `/`, so `prod#api.war` is served under `/prod/api`.
 
-See [docs/07-部署方案.md](docs/07-部署方案.md) for the full setup (directory layout, Nginx configuration, release and rollback).
+See [docs/07-部署方案.md](docs/07-部署方案.md) for the WAR + Tomcat setup (directory layout, Nginx, release and rollback).
+
+For a public instance, read [deploy/README.md](deploy/README.md): three deployment paths (VPS / Render / Alibaba Cloud), HTTPS, and a security baseline for public demos.
 
 ## License
 
