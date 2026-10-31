@@ -39,6 +39,13 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
+        <!-- 接口文档：springdoc 3.x 对应 Spring Boot 4，生产环境通过配置关闭 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
         <!-- war 部署：内嵌容器由外部 Tomcat 提供 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

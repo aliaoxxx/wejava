@@ -2,6 +2,7 @@ package com.wejava.common.core;
 
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import lombok.Data;
@@ -22,7 +23,12 @@ public class PageQuery implements Serializable {
 
     private static final Pattern SAFE_COLUMN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]{0,63}$");
 
+    // @Schema 的 defaultValue 只影响接口文档：Swagger UI 会把默认值填进输入框，
+    // 避免"Try it out"发出空串导致类型转换失败
+    @Schema(description = "页码，从 1 开始", defaultValue = "1")
     private long pageNum = 1;
+
+    @Schema(description = "每页条数，最大 100", defaultValue = "10")
     private long pageSize = 10;
 
     /** 排序字段，必须是数据库列名；前端传的驼峰字段需在 Service 里转换 */

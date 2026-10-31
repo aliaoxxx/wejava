@@ -219,6 +219,10 @@ mvn test                    # 单元测试
 ./scripts/verify-auth.sh    # 认证闭环验收 14 项（需 CAPTCHA_ENABLED=false 启动）
 ```
 
+后端启动后接口文档在 `/dev/api/swagger-ui/index.html`（Docker 演示环境是
+`/api/swagger-ui/index.html`）。点右上角 **Authorize** 填入 `accessToken` 即可调试。
+生产环境会同时关闭文档和 UI。
+
 前端类型检查与构建：
 
 ```bash

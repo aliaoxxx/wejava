@@ -4,6 +4,10 @@
 
 > Base path: `http://localhost:8000/dev/api` in development, `/prod/api` in production
 > Except for login, captcha, and refresh, every endpoint requires `Authorization: Bearer <access_token>`
+>
+> Interactive docs: Swagger UI is available in development and the demo
+> (`/dev/api/swagger-ui/index.html`, `/api/swagger-ui/index.html`). Click **Authorize** and paste an
+> access token to call the endpoints. Production disables it via `springdoc.api-docs.enabled=false`.
 
 ---
 

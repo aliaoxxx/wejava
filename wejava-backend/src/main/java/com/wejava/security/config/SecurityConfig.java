@@ -32,7 +32,16 @@ public class SecurityConfig {
     /** 免认证白名单（不含 context-path /api） */
     // /stream/** 用一次性票据鉴权（EventSource 无法带请求头），因此不走 JWT 过滤器
     private static final String[] WHITELIST = {
-        "/auth/login", "/auth/refresh", "/auth/captcha", "/ping", "/error", "/stream/**"
+        "/auth/login",
+        "/auth/refresh",
+        "/auth/captcha",
+        "/ping",
+        "/error",
+        "/stream/**",
+        // 接口文档（生产环境 springdoc.api-docs.enabled=false，这些路径会 404）
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html"
     };
 
     /** 允许跨域的来源，逗号分隔，支持通配符。生产环境通过配置覆盖 */

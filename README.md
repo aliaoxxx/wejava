@@ -218,6 +218,10 @@ mvn test                    # unit tests
 ./scripts/verify-auth.sh    # 14-case auth acceptance suite (start with CAPTCHA_ENABLED=false)
 ```
 
+With the backend running, the API docs are at `/dev/api/swagger-ui/index.html`
+(in the Docker demo: `/api/swagger-ui/index.html`). Click **Authorize** and paste an
+`accessToken` to try the endpoints. Production builds disable both the docs and the UI.
+
 Frontend type checking and build:
 
 ```bash
