@@ -1,0 +1,119 @@
+# WeJavaAdmin 一键启动编排
+#
+#   cp .env.example .env      # 可选，不改也能跑
+#   docker compose up -d
+#   open http://localhost:3300/
+#
+# 首次启动会自动建库建表并写入种子数据（Flyway），无需手工执行 SQL。
+
+name: wejava
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: wejava-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${DB_NAME:-wejava}
+      MYSQL_USER: ${DB_USER:-wejava}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-wejava123456}
+      TZ: ${TZ:-Asia/Shanghai}
+      LANG: en_US.UTF-8
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks: [wejava]
+
+  redis:
+    image: redis:7-alpine
+    container_name: wejava-redis
+    restart: unless-stopped
+    # 演示环境只当缓存/会话用，不做持久化（重启后重新登录即可）
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-wejava123456}", "--appendonly", "no"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wejava123456}
+      TZ: ${TZ:-Asia/Shanghai}
+      LANG: en_US.UTF-8
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks: [wejava]
+
+  backend:
+    build:
+      context: .
+      dockerfile: wejava-backend/Dockerfile
+    container_name: wejava-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-wejava}
+      DB_USER: ${DB_USER:-wejava}
+      DB_PASSWORD: ${DB_PASSWORD:-wejava123456}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wejava123456}
+      JWT_SECRET: ${JWT_SECRET:-wejava-docker-demo-secret-key-32chars!!}
+      AI_CONFIG_SECRET: ${AI_CONFIG_SECRET:-wejava-docker-demo-ai-secret-32b!!}
+      CAPTCHA_ENABLED: ${CAPTCHA_ENABLED:-true}
+      TZ: ${TZ:-Asia/Shanghai}
+    expose:
+      - "8080"
+    # 优雅停机：给正在处理中的请求留时间
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    networks: [wejava]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: wejava-frontend/Dockerfile
+    container_name: wejava-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3300}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks: [wejava]
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  wejava:
+    driver: bridge

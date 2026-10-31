@@ -1,0 +1,14 @@
+# 构建上下文只需要源码，排除依赖与产物，避免镜像构建缓慢
+.git
+.github
+.idea
+.vscode
+.pnpm-store
+**/node_modules
+**/target
+**/dist
+**/.vite
+**/*.log
+docs/screenshots
+.DS_Store
+.env

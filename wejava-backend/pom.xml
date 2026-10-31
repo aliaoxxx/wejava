@@ -150,6 +150,15 @@
                 <war.name>dev#api</war.name>
             </properties>
         </profile>
+        <!-- 容器化演示：前后端都走根路径，产物名不带 #（无需部署到 Tomcat） -->
+        <profile>
+            <id>docker</id>
+            <properties>
+                <profiles.active>docker</profiles.active>
+                <war.name>wejava</war.name>
+            </properties>
+        </profile>
+
         <profile>
             <id>prod</id>
             <properties>

@@ -31,7 +31,8 @@ export default defineConfig(({ mode }) => ({
     include: ['vue', 'vue-router', 'pinia', 'axios', 'element-plus/es', '@element-plus/icons-vue', 'dayjs']
   },
   // 前端挂在前缀下：生产 /prod/，开发 /dev/
-  base: mode === 'production' ? '/prod/' : '/dev/',
+  // dev → /dev/，prod → /prod/，docker 演示 → /（可用 VITE_APP_BASE 覆盖）
+  base: process.env.VITE_APP_BASE || (mode === 'docker' ? '/' : mode === 'production' ? '/prod/' : '/dev/'),
   server: {
     port: 3300,
     proxy: {

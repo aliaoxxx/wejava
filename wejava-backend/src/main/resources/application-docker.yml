@@ -1,0 +1,49 @@
+# 容器化演示环境（docker compose 一键启动使用）
+#
+# 与 dev / prod 的区别：
+# - 上下文路径 /api（前端走根路径，Nginx 把 /api 反代到这里）
+# - 数据库、Redis 都指向 compose 里的服务名（mysql / redis）
+# - 日志只输出到控制台，方便 docker compose logs 查看
+# - 允许使用演示用的默认密钥（StartupSecretValidator 只在 prod 生效）
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  tomcat:
+    threads:
+      max: ${TOMCAT_MAX_THREADS:40}
+      min-spare: ${TOMCAT_MIN_SPARE:5}
+    max-connections: ${TOMCAT_MAX_CONNECTIONS:1024}
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:wejava}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:wejava}
+    password: ${DB_PASSWORD:wejava123456}
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 30000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:wejava123456}
+      database: 0
+      timeout: 3s
+
+wejava:
+  auth:
+    # 演示用默认值：公网部署请通过环境变量覆盖
+    secret: ${JWT_SECRET:wejava-docker-demo-secret-key-32chars!!}
+    captcha-enabled: ${CAPTCHA_ENABLED:true}
+  ai:
+    config-secret: ${AI_CONFIG_SECRET:wejava-docker-demo-ai-secret-32b!!}
+
+logging:
+  level:
+    root: info
+    com.wejava: info

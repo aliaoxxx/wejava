@@ -60,6 +60,40 @@ Authentication uses a **self-managed JWT with a Redis session whitelist** — no
 >
 > Virtual threads require JDK 21. This project targets JDK 17 and does not use them.
 
+## Docker (recommended)
+
+No JDK / Node / MySQL / Redis required — one command starts everything:
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose up -d
+```
+
+Open <http://localhost:3300/> and sign in with `admin / admin123`.
+
+The database, tables and seed data are created automatically by Flyway on first start — **no manual SQL needed**.
+
+| Service | Role |
+|---|---|
+| `frontend` | Nginx serving the SPA on host port 3300, proxying `/api` to the backend |
+| `backend` | Spring Boot app (`docker` profile, context path `/api`) |
+| `mysql` | MySQL 8.4, data persisted in the `mysql-data` volume |
+| `redis` | Redis 7, reachable only inside the compose network |
+
+Common commands:
+
+```bash
+docker compose logs -f backend   # follow backend logs
+docker compose ps                # health status
+docker compose down              # stop, keep data
+docker compose down -v           # stop and drop volumes — next start is a clean environment
+```
+
+To change ports, passwords or secrets: `cp .env.example .env`, edit, then `docker compose up -d`.
+
+> MySQL and Redis are not published to the host. To connect from your machine for debugging,
+> add `ports: ["127.0.0.1:3307:3306"]` to the service in `docker-compose.yml`.
+
 ## Requirements
 
 | Dependency | Version | Notes |
@@ -71,7 +105,7 @@ Authentication uses a **self-managed JWT with a Redis session whitelist** — no
 | MySQL | 8.4+ | `utf8mb4` required |
 | Redis | 7.0+ | |
 
-## Quick Start
+## Local Development (without Docker)
 
 ```bash
 # 1. Create the database once; tables and seed data are migrated by Flyway

@@ -60,6 +60,40 @@ English | [简体中文](README.zh-CN.md)
 >
 > 虚拟线程需 JDK 21，当前使用 JDK 17，未启用。
 
+## Docker 一键启动（推荐）
+
+不需要安装 JDK / Node / MySQL / Redis，一条命令拉起全部服务：
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose up -d
+```
+
+打开 <http://localhost:3300/>，用 `admin / admin123` 登录。
+
+首次启动会自动建库、建表并写入种子数据（Flyway），**不需要手工执行任何 SQL**。
+
+| 服务 | 作用 |
+|---|---|
+| `frontend` | Nginx 托管前端（宿主机 3300），并把 `/api` 反代到后端 |
+| `backend` | Spring Boot 应用（`docker` profile，上下文 `/api`） |
+| `mysql` | MySQL 8.4，数据持久化在命名卷 `mysql-data` |
+| `redis` | Redis 7，只在容器网络内可见 |
+
+常用命令：
+
+```bash
+docker compose logs -f backend   # 跟随后端日志
+docker compose ps                # 查看健康状态
+docker compose down              # 停止（保留数据）
+docker compose down -v           # 停止并删除数据卷，下次启动是全新环境
+```
+
+改端口、密码或密钥：`cp .env.example .env` 后编辑，再 `docker compose up -d`。
+
+> MySQL 与 Redis 默认不映射到宿主机端口（只走容器网络）。需要从本机连库调试时，
+> 在 `docker-compose.yml` 里给对应服务加 `ports: ["127.0.0.1:3307:3306"]` 即可。
+
 ## 环境要求
 
 | 依赖 | 版本 | 说明 |
@@ -71,7 +105,7 @@ English | [简体中文](README.zh-CN.md)
 | MySQL | 8.4+ | 需 `utf8mb4` |
 | Redis | 7.0+ | |
 
-## 快速开始
+## 本地开发（不用 Docker）
 
 ```bash
 # 1. 建库（只需一次，表结构与初始数据由 Flyway 自动迁移）
