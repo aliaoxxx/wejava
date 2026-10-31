@@ -18,10 +18,12 @@ class AesUtilsTest {
     @Test
     void 加密后能解密回原文() {
         AesUtils aes = new AesUtils(SECRET);
-        String cipherText = aes.encrypt("unit-test-secret-value");
+        String plain = "unit-test-secret-value";
 
-        assertThat(cipherText).isNotEqualTo("unit-test-secret-value");
-        assertThat(aes.decrypt(cipherText)).isEqualTo("unit-test-secret-value");
+        String cipherText = aes.encrypt(plain);
+
+        assertThat(cipherText).isNotEqualTo(plain);
+        assertThat(aes.decrypt(cipherText)).isEqualTo(plain);
     }
 
     @Test
@@ -68,7 +70,9 @@ class AesUtilsTest {
     @Test
     void 掩码只保留首尾() {
         AesUtils aes = new AesUtils(SECRET);
-        assertThat(aes.mask("unit-test-key-abcdefghijklmnop")).startsWith("unit-").endsWith("mnop");
+        assertThat(aes.mask("unit-test-key-abcdefghijklmnop"))
+                .startsWith("unit-")
+                .endsWith("mnop");
         assertThat(aes.mask("short")).isEqualTo("****");
     }
 }

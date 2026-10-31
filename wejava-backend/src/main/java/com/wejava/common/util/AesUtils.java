@@ -116,7 +116,7 @@ public class AesUtils {
         return new String(cipher.doFinal(encrypted), StandardCharsets.UTF_8);
     }
 
-    /** 展示用掩码：abcd…wxyz */
+    /** 展示用掩码：保留首 5 位和末 4 位，中间用 **** 代替 */
     public String mask(String plain) {
         if (!StringUtils.hasText(plain)) {
             return "";

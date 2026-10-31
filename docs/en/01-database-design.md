@@ -468,7 +468,8 @@ CREATE TABLE `sys_ai_config` (
 ```
 
 **Why the key is encrypted**: `api_key` is encrypted with AES-GCM using `AI_CONFIG_SECRET`;
-a dumped table yields no plaintext, and the API only returns a mask (`xxxx****xxxx`).
+a dumped table yields no plaintext, and the API only returns a mask
+(first 5 characters, `****`, last 4 characters).
 
 ---
 

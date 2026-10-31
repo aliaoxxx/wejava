@@ -749,7 +749,8 @@ Events: `delta` (incremental text), `done` (usage and latency), `error` (failure
 | PUT | `/system/ai-config` | `system:ai:config` |
 
 The API key is stored with AES-GCM and **only ever returned masked**
-(e.g. `xxxx****xxxx`); submitting an empty value or the mask keeps the existing key.
+(first 5 characters, `****`, last 4 characters); submitting an empty value or the mask keeps
+the existing key.
 The encryption secret comes from the `AI_CONFIG_SECRET` environment variable.
 
 ### 15.5 Startup Check in Production
