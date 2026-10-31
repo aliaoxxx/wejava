@@ -56,8 +56,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        # 版本由 package.json 的 packageManager 字段决定，避免两处冲突
 
       - name: Setup Node 20
         uses: actions/setup-node@v4

@@ -4,7 +4,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-RUN corepack enable
+# 固定 pnpm 版本：新大版本对构建脚本的策略不同，会导致安装中断
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 # 先装依赖，源码改动时可复用缓存
 COPY wejava-frontend/package.json wejava-frontend/pnpm-lock.yaml ./
