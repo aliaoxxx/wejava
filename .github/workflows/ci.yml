@@ -56,7 +56,9 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        # 版本由 package.json 的 packageManager 字段决定，避免两处冲突
+        with:
+          # 仓库根目录没有 package.json，必须指向前端的，否则 action 找不到 version
+          package_json_file: wejava-frontend/package.json
 
       - name: Setup Node 20
         uses: actions/setup-node@v4
