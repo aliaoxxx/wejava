@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="WeJavaAdmin">
+  <defs>
+    <linearGradient id="wj" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B6EF6"/>
+      <stop offset="1" stop-color="#6FA8FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="16" fill="url(#wj)"/>
+  <path d="M17 21 L25 43 L32 30" fill="none" stroke="#FFFFFF" stroke-width="6.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 30 L39 43 L47 21" fill="none" stroke="#FFFFFF" stroke-opacity="0.72"
+        stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

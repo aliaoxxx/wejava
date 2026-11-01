@@ -1,5 +1,9 @@
 English | [简体中文](README.zh-CN.md)
 
+<p align="center">
+  <img src="assets/logo-mark.svg" alt="WeJavaAdmin" width="88" height="88">
+</p>
+
 # WeJavaAdmin
 
 基于 **Spring Boot 4.1 + Spring Security 7.1 + MyBatis-Plus + Vue 3** 的后台管理框架。

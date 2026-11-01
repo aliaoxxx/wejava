@@ -98,11 +98,26 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: #fff;
   font-weight: 600;
   font-size: 15px;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.logo-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+}
+
+.logo-text {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .menu-scroll {

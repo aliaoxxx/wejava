@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import logoMark from '@/assets/logo-mark.svg'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { getCaptcha, type CaptchaVO } from '@/api/auth'
@@ -59,7 +60,10 @@ onMounted(refreshCaptcha)
   <div class="login-page">
     <el-card class="login-card">
       <template #header>
-        <div class="login-title">WeJava 管理后台</div>
+        <div class="login-brand">
+          <img class="login-logo" :src="logoMark" alt="WeJavaAdmin" />
+          <span class="login-title">WeJava 管理后台</span>
+        </div>
       </template>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" @keyup.enter="handleLogin">
@@ -110,8 +114,18 @@ onMounted(refreshCaptcha)
 .login-card {
   width: 380px;
 }
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.login-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
 .login-title {
-  text-align: center;
   font-size: 18px;
   font-weight: 600;
 }
