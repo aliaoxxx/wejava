@@ -239,12 +239,17 @@ pnpm build      # vue-tsc in strict mode, then Vite build
 # Backend: WAR (prod#api.war deploys under the /prod/api context)
 mvn clean package -Pprod -DskipTests
 
-# Frontend: base path /prod/, output in dist/
+# Frontend: root-path build (recommended) — assets at /assets/, API stays /prod/api
+VITE_APP_BASE=/ pnpm build
+
+# Frontend: sub-path build — base /prod/, served at https://host/prod/
 pnpm build
 ```
 
-Path convention: `/prod/` in production, `/dev/` in development. Tomcat resolves the `#`
-in a WAR filename to `/`, so `prod#api.war` is served under `/prod/api`.
+Path convention: the **frontend can be served at the root path** (`https://host/`), while the
+API stays under `/prod/api` — Tomcat resolves the `#` in a WAR filename to `/`, so
+`prod#api.war` is served under `/prod/api`. Development uses `/dev/` on both sides.
+See `docs/07-部署方案.md` §1 for the trade-off.
 
 See [docs/07-部署方案.md](docs/07-部署方案.md) for the WAR + Tomcat setup (directory layout, Nginx, release and rollback).
 

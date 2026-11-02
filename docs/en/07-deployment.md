@@ -6,17 +6,30 @@
 
 ## 1. Path Planning
 
-| Environment | Frontend URL | API URL | Backend artifact |
+There are two shapes for the public URL. **The root-path shape is recommended**: shorter
+URLs for users, and it matches how most SaaS admin consoles look.
+
+| Shape | Frontend URL | API URL | Backend artifact |
 |---|---|---|---|
-| Production | `https://host/prod/` | `https://host/prod/api/**` | `prod#api.war` |
-| Development | `https://host/dev/` | `https://host/dev/api/**` | `dev#api.war` |
+| **Root path (recommended)** | `https://host/` | `https://host/prod/api/**` | `prod#api.war` |
+| Sub-path | `https://host/prod/` | `https://host/prod/api/**` | `prod#api.war` |
+| Development | `http://localhost:3300/dev/` | `http://localhost:8000/dev/api/**` | `dev#api.war` |
 
-**How the prefix takes effect**
+**Why the API keeps the `/prod/api` prefix**
 
-- Frontend: the Vite `base` is `/prod/` for `pnpm build` and `/dev/` for `pnpm run dev`;
-  routing uses `createWebHistory(import.meta.env.BASE_URL)`, so refreshing a deep link does not 404.
-- API: the request base URL is determined by `VITE_APP_BASE_API` in `.env.production` / `.env.development`.
-- Backend context: **the WAR filename determines Tomcat's context path**, and `#` is resolved to `/`.
+Moving the frontend to the root path only needs a different build flag and an Nginx
+change — **the backend is untouched**. Moving the API to `/api` would mean renaming the
+WAR (`prod#api.war` → `api.war`), redeploying, and cleaning the old context: more risk for
+a prefix users never see. So it stays.
+
+**How the prefixes work**
+
+- Frontend: the Vite `base` is fixed at build time. Plain `pnpm build` produces `/prod/`;
+  `VITE_APP_BASE=/ pnpm build` produces `/assets/...` (root-path shape).
+  Routing uses `createWebHistory(import.meta.env.BASE_URL)`, so deep links survive a refresh.
+- API: the base URL comes from `VITE_APP_BASE_API` in `.env.production` / `.env.development`,
+  which is **`/prod/api` for both frontend shapes** — nothing to change.
+- Backend context: **the WAR filename decides the Tomcat context path**; `#` becomes `/`.
   `prod#api.war` → `/prod/api`, `dev#api.war` → `/dev/api`.
 
 ## 2. Server Directories
@@ -56,9 +69,18 @@ and sets `finalName=prod#api`.
 
 ```bash
 pnpm install
-pnpm build          # output is in dist/, base is /prod/
+
+# Root-path shape (recommended): assets resolve to /assets/..., API stays /prod/api
+VITE_APP_BASE=/ pnpm build
+
+# Sub-path shape: base is /prod/
+pnpm build
+
 pnpm dev            # dev server http://localhost:3300/dev/
 ```
+
+Output goes to `dist/`. The two shapes differ only in the asset prefix — **the deploy
+directory is the same**.
 
 ## 4. Deploying the Backend
 
@@ -90,50 +112,73 @@ rm -rf /opt/wejava/frontend/prod/*
 cp -r wejava-frontend/dist/* /opt/wejava/frontend/prod/
 ```
 
+Nginx `root` must point at the `prod` level (not its parent), otherwise in the root-path
+shape `/assets/app.js` resolves to `/opt/wejava/frontend/assets/app.js` and 404s.
+
 ## 6. Nginx Configuration
+
+Root-path shape (this is what production runs; swap `listen 80` for the certificate block
+when HTTPS is enabled):
 
 ```nginx
 server {
     listen 80;
     server_name admin.example.com;
 
-    # ---------- Frontend: production ----------
-    location /prod/ {
-        alias /opt/wejava/frontend/prod/;
-        try_files $uri $uri/ /prod/index.html;
-        expires 7d;
-    }
-    location = /prod/index.html {
-        alias /opt/wejava/frontend/prod/index.html;
-        add_header Cache-Control "no-cache";
+    # ---------- Frontend: root path ----------
+    location / {
+        root /opt/wejava/frontend/prod;
+        try_files $uri $uri/ /index.html;
     }
 
-    # ---------- API: production ----------
-    location /prod/api/ {
-        proxy_pass http://127.0.0.1:8080/prod/api/;
+    # Entry document is never cached, so a release takes effect immediately
+    location = /index.html {
+        root /opt/wejava/frontend/prod;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    # Old /prod/ URLs redirect to the root; /prod/api/ is longer and unaffected
+    location = /prod { return 301 /; }
+    location /prod/  { return 301 /; }
+
+    # ---------- SSE: buffering must be off ----------
+    location ~ ^/prod/api/(stream|ai)/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 60s;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
     }
 
-    # ---------- Development environment (optional, same approach) ----------
-    # location /dev/ { alias /opt/wejava/frontend/dev/; try_files $uri $uri/ /dev/index.html; }
-    # location /dev/api/ { proxy_pass http://127.0.0.1:8081/dev/api/; }
-
-    # Root path redirects to production
-    location = / {
-        return 302 /prod/;
+    # ---------- Business API ----------
+    location /prod/api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        client_max_body_size 20m;
     }
 }
 ```
 
-**Three things to watch**
+For the sub-path shape, replace `location /` with `location /prod/`, drop the two 301
+rules, and leave everything else as is.
 
-1. `try_files` falls back to `/prod/index.html`; otherwise refreshing `/prod/system/user` would 404.
-2. Caching must be disabled for `index.html`; otherwise users receive a stale asset manifest after a release.
-3. `proxy_pass` ends with `/`, matching the `location` path one-to-one, with no path rewriting.
+**Four things to watch**
+
+1. `try_files` must fall back to `index.html`; otherwise refreshing `/system/user` returns 404.
+2. `index.html` must not be cached; otherwise users receive a stale asset manifest.
+3. `location /prod/api/` wins over `location /` (longer prefix), so API calls never fall
+   into the SPA fallback.
+4. The SSE regex `location ~` has the highest priority — `stream` and `ai` long-lived
+   connections need their own block, otherwise Nginx buffers the events and they never arrive.
 
 ## 7. Release and Rollback
 
@@ -155,6 +200,7 @@ rsync -a /opt/wejava/frontend/prod.bak/ /opt/wejava/frontend/prod/
 |---|---|
 | Backend liveness | `GET /prod/api/ping` |
 | Database | `GET /prod/api/ping/db` (login required) |
-| Frontend | `GET /prod/` returns 200 |
+| Frontend | `GET /` returns 200 (probe `/prod/` for the sub-path shape) |
+| Port exposure | Only 80/443 public; Tomcat 8080 bound to `127.0.0.1` |
 
 Periodic probing by the monitoring system is all that is needed.

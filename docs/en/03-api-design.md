@@ -670,13 +670,19 @@ X-Accel-Buffering: no
 Buffering must be disabled behind Nginx, otherwise events are held back:
 
 ```nginx
-location /prod/api/stream/ {
-    proxy_pass http://127.0.0.1:8080/prod/api/stream/;
+# proxy_pass without a URI keeps the /prod/api prefix, matching the Tomcat context path
+location ~ ^/prod/api/(stream|ai)/ {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
     proxy_buffering off;
     proxy_cache off;
     proxy_read_timeout 3600s;
 }
 ```
+
+The full site configuration (root-path frontend, SPA fallback, API proxy) is in
+`07-deployment.md` §6.
 
 ### Multiple Instances
 

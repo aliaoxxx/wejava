@@ -240,12 +240,16 @@ pnpm build      # vue-tsc 严格模式 + Vite 构建
 # 后端：WAR 包（prod#api.war 部署到 Tomcat 后上下文为 /prod/api）
 mvn clean package -Pprod -DskipTests
 
-# 前端：base 为 /prod/，产物在 dist/
+# 前端：根路径构建（推荐）—— 资源在 /assets/，接口仍走 /prod/api
+VITE_APP_BASE=/ pnpm build
+
+# 前端：子路径构建 —— base 为 /prod/，访问地址 https://host/prod/
 pnpm build
 ```
 
-路径约定：生产 `/prod/`，开发 `/dev/`。WAR 文件名中的 `#` 会被 Tomcat 解析为 `/`，
-所以 `prod#api.war` 的上下文就是 `/prod/api`。
+路径约定：**前端可部署在根路径**（`https://host/`），接口仍在 `/prod/api` ——
+WAR 文件名中的 `#` 会被 Tomcat 解析为 `/`，所以 `prod#api.war` 的上下文就是 `/prod/api`。
+开发环境前后端都走 `/dev/`。取舍见 `docs/07-部署方案.md` 第 1 节。
 
 WAR + Tomcat 方案见 [docs/07-部署方案.md](docs/07-部署方案.md)（目录规划、Nginx 配置、发版回滚）。
 
