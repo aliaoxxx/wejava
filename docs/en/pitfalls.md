@@ -119,8 +119,12 @@ Spring Boot 4 is not "just change the version number" — it simultaneously swit
   - `com.vaadin.external.google:android-json` is **excluded**: unmaintained upstream with no fix,
     Android-only, and JVM tests use json-smart
 
-  Accepted risk: `net.minidev:json-smart` 2.6.0 is the current release and the advisory says
-  "through 2.6.0", i.e. no fix yet; test scope only, never shipped in the WAR.
+  `net.minidev:json-smart` 2.6.0 is the current release (the advisory says "through 2.6.0",
+  so upstream has no fix yet). **Handling: exclude the whole chain.** It only serves
+  `json-path` assertions, and the project had a single `jsonPath("$.code").exists()`.
+  That assertion became a Hamcrest string check, and both `com.jayway.jsonpath:json-path`
+  and `net.minidev:json-smart` are excluded from `spring-boot-starter-test`; the test
+  classpath no longer contains them and all 57 tests still pass.
 
 - [ ] 🟢 **Verify after overriding**: confirm with `mvn dependency:tree`, then run tests,
   package, and boot the real application (logback 1.6 against Boot 4.1 logging, the MySQL

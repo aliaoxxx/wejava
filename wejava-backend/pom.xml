@@ -170,6 +170,20 @@
                     <groupId>com.vaadin.external.google</groupId>
                     <artifactId>android-json</artifactId>
                 </exclusion>
+                <!-- json-path 的唯一用途是 MockMvc 的 jsonPath 断言，我们只用了一处，
+                     已改成 Hamcrest 字符串断言。整条排除后 json-smart / accessors-smart
+                     也不再进入测试类路径，CVE-2026-113602 随之消失 -->
+                <exclusion>
+                    <groupId>com.jayway.jsonpath</groupId>
+                    <artifactId>json-path</artifactId>
+                </exclusion>
+                <!-- starter-test 直接声明了 json-smart（供 json-path 断言用）。
+                     本项目已不再使用 JSON 路径断言，排除后 CVE-2026-113602 不再出现在依赖树里。
+                     上游 2.6.0 即最新版，暂无修复版本 -->
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

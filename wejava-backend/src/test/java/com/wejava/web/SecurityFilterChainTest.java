@@ -1,9 +1,10 @@
 package com.wejava.web;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wejava.common.interceptor.ConcurrencyInterceptor;
@@ -64,7 +65,8 @@ class SecurityFilterChainTest {
     void 未携带令牌访问受保护接口返回401() throws Exception {
         mockMvc.perform(get("/system/dept/list"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").exists());
+                // 只断言响应体里有统一返回体的 code 字段，不引入 json-path 依赖
+                .andExpect(content().string(containsString("\"code\"")));
     }
 
     @Test
