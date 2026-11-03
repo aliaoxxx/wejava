@@ -81,10 +81,11 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 需要 Docker Compose **v2.24+**（overlay 用了 `!reset` 语法）。固定版本：
 
 ```bash
-TAG=v0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+TAG=0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 ```
 
-镜像：`ghcr.io/aliaoxxx/wejava-backend`、`ghcr.io/aliaoxxx/wejava-frontend`。
+镜像：`ghcr.io/aliaoxxx/wejava-backend`、`ghcr.io/aliaoxxx/wejava-frontend`（仅 linux/amd64；
+Apple Silicon 上 overlay 会指定 `platform: linux/amd64`，走模拟运行）。
 不加 overlay 时，`docker compose up -d` 仍是本地构建源码（首次 5–10 分钟）。
 
 ## 特性

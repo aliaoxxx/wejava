@@ -82,10 +82,11 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 Requires Docker Compose **v2.24+** (the overlay uses `!reset`). Pin a version with
 
 ```bash
-TAG=v0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+TAG=0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 ```
 
-Images: `ghcr.io/aliaoxxx/wejava-backend` and `ghcr.io/aliaoxxx/wejava-frontend`.
+Images: `ghcr.io/aliaoxxx/wejava-backend` and `ghcr.io/aliaoxxx/wejava-frontend` (linux/amd64 only;
+on Apple Silicon the overlay sets `platform: linux/amd64`, which runs under emulation).
 Without the overlay, `docker compose up -d` builds locally from source (5–10 minutes the first time).
 
 ## Features
