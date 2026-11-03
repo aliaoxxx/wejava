@@ -26,5 +26,10 @@ public class SysAiMessage {
 
     private Long durationMs;
 
+    /** 生成该消息的端点与模型，便于排查是哪个服务商答的 */
+    private Long configId;
+
+    private String model;
+
     private LocalDateTime createTime;
 }

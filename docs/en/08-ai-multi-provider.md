@@ -3,7 +3,8 @@
 # 08 · AI Multi-Provider Design
 
 > Goal: turn "one DeepSeek endpoint" into "several domestic model endpoints, switchable in chat".
-> Status: **design draft** (pending review, not implemented).
+> Status: **implemented** (V15 migration + multi-endpoint management + chat switching).
+> Deviations from the original draft are marked "implementation note".
 
 ---
 

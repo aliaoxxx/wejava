@@ -13,7 +13,7 @@ interface ChatHandlers {
  * 而提问需要 POST 请求体。解析逻辑仍遵循 SSE 协议（event/data + 空行分隔）。
  */
 export async function streamChat(
-  payload: { sessionId?: string; content: string },
+  payload: { sessionId?: string; content: string; configId?: string },
   handlers: ChatHandlers,
   signal?: AbortSignal
 ): Promise<void> {

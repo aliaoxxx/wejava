@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
 import { streamChat } from '@/utils/aiStream'
+import { listAiConfigs, type AiConfigItem } from '@/api/aiConfig'
 
 interface ChatItem {
   role: 'user' | 'assistant'
@@ -12,6 +13,25 @@ const messages = ref<ChatItem[]>([])
 const input = ref('')
 const sending = ref(false)
 const sessionId = ref<string>()
+const endpoints = ref<AiConfigItem[]>([])
+const selectedConfigId = ref<string>()
+
+const STORAGE_KEY = 'wejava:ai:configId'
+
+/** 只列出启用中的端点，默认端点排最前 */
+async function loadEndpoints() {
+  const res = await listAiConfigs()
+  endpoints.value = (res.data ?? []).filter((item) => item.enabled === 1)
+  const remembered = localStorage.getItem(STORAGE_KEY) ?? undefined
+  const exists = endpoints.value.some((item) => item.aiConfigId === remembered)
+  selectedConfigId.value = exists
+    ? remembered
+    : (endpoints.value.find((item) => item.isDefault) ?? endpoints.value[0])?.aiConfigId
+}
+
+function onEndpointChange(id: string) {
+  if (id) localStorage.setItem(STORAGE_KEY, id)
+}
 const listRef = ref<HTMLElement>()
 let controller: AbortController | undefined
 
@@ -35,7 +55,7 @@ async function send() {
   controller = new AbortController()
   try {
     await streamChat(
-      { sessionId: sessionId.value, content },
+      { sessionId: sessionId.value, content, configId: selectedConfigId.value },
       {
         onDelta: (text) => {
           reply.content += text
@@ -77,6 +97,8 @@ function stop() {
   if (last) last.pending = false
 }
 
+onMounted(loadEndpoints)
+
 function newSession() {
   sessionId.value = undefined
   messages.value = []
@@ -89,6 +111,21 @@ function newSession() {
       <div class="chat-header">
         <span>AI 助手</span>
         <div class="header-actions">
+          <el-select
+            v-if="endpoints.length"
+            v-model="selectedConfigId"
+            size="small"
+            style="width: 200px"
+            placeholder="选择模型"
+            @change="onEndpointChange"
+          >
+            <el-option
+              v-for="item in endpoints"
+              :key="item.aiConfigId"
+              :label="`${item.configName || item.model}${item.isDefault ? '（默认）' : ''}`"
+              :value="item.aiConfigId"
+            />
+          </el-select>
           <el-tag v-if="sessionId" size="small" type="info">会话 {{ sessionId }}</el-tag>
           <el-button size="small" @click="newSession">新对话</el-button>
         </div>

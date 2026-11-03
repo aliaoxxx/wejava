@@ -1,25 +1,41 @@
 package com.wejava.ai.service;
 
+import com.wejava.ai.model.bo.AiChatConfig;
 import com.wejava.ai.model.form.AiConfigForm;
 import com.wejava.ai.model.vo.AiConfigVO;
+import com.wejava.ai.provider.AiProvider;
+import java.util.List;
 
 public interface AiConfigService {
 
-    /** 管理页读取（密钥掩码） */
-    AiConfigVO get();
+    /** 端点列表（密钥掩码），默认端点排在最前 */
+    List<AiConfigVO> list();
 
-    void update(AiConfigForm form);
+    AiConfigVO get(Long id);
 
-    /** 对话链路使用：返回解密后的明文密钥，未配置时返回 null */
-    String plainApiKey();
+    Long create(AiConfigForm form);
 
-    String model();
+    void update(Long id, AiConfigForm form);
 
-    String baseUrl();
+    /** 删除端点；默认端点与唯一端点不允许删除 */
+    void delete(Long id);
 
-    Integer maxTokens();
+    /** 设为聊天默认端点 */
+    void setDefault(Long id);
 
-    double temperature();
+    /** 厂商预设，供前端下拉 */
+    List<AiProvider> providers();
 
-    boolean enabled();
+    /** 拉取该端点支持的模型列表 */
+    List<String> listModels(Long id);
+
+    /** 连通性测试，返回耗时毫秒 */
+    long test(Long id);
+
+    /**
+     * 对话链路使用：{@code configId} 为空时取默认端点。
+     *
+     * @return 未配置任何可用端点时返回 {@code null}
+     */
+    AiChatConfig resolve(Long configId);
 }

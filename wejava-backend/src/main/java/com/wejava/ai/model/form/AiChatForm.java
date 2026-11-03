@@ -10,6 +10,9 @@ public class AiChatForm {
     /** 为空表示新建会话 */
     private Long sessionId;
 
+    /** 指定使用的 AI 端点；为空表示用默认端点 */
+    private Long configId;
+
     @NotBlank(message = "提问内容不能为空")
     @Size(max = 4000, message = "单次提问最长 4000 字")
     private String content;

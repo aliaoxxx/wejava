@@ -738,7 +738,7 @@ so their behaviour is unchanged.
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/chat` | Streaming chat, returns `text/event-stream` |
+| POST | `/chat` | Streaming chat, returns `text/event-stream`; the body may carry `configId` |
 | GET | `/session/{sessionId}/messages` | Session history |
 
 Events: `delta` (incremental text), `done` (usage and latency), `error` (failure reason).
@@ -749,10 +749,20 @@ Events: `delta` (incremental text), `done` (usage and latency), `error` (failure
 
 ### 15.4 AI Config `/system/ai-config`
 
-| Method | Path | Permission |
-|---|---|---|
-| GET | `/system/ai-config` | `system:ai:config` |
-| PUT | `/system/ai-config` | `system:ai:config` |
+One endpoint = vendor + model + address + key. Several can be configured; chat uses the row
+with `is_default = 1` unless the request names another one.
+
+| Method | Path | Permission | Purpose |
+|---|---|---|---|
+| GET | `/system/ai-config/list` | `system:ai:config` | Endpoint list (default first) |
+| GET | `/system/ai-config/providers` | `system:ai:config` | Vendor presets (base_url + console URL) |
+| GET | `/system/ai-config/{id}` | `system:ai:config` | Single endpoint |
+| POST | `/system/ai-config` | `system:ai:config` | Create |
+| PUT | `/system/ai-config/{id}` | `system:ai:config` | Update |
+| DELETE | `/system/ai-config/{id}` | `system:ai:config` | Delete (default and last row rejected) |
+| PUT | `/system/ai-config/{id}/default` | `system:ai:config` | Make default |
+| GET | `/system/ai-config/{id}/models` | `system:ai:config` | Model list, proxied by the server |
+| POST | `/system/ai-config/{id}/test` | `system:ai:config` | Connectivity test (5/min) |
 
 The API key is stored with AES-GCM and **only ever returned masked**
 (first 5 characters, `****`, last 4 characters); submitting an empty value or the mask keeps

@@ -1,10 +1,11 @@
 package com.wejava.ai.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.wejava.ai.client.DeepSeekClient;
+import com.wejava.ai.client.OpenAiCompatibleClient;
 import com.wejava.ai.client.SysAiMessageView;
 import com.wejava.ai.mapper.SysAiMessageMapper;
 import com.wejava.ai.mapper.SysAiSessionMapper;
+import com.wejava.ai.model.bo.AiChatConfig;
 import com.wejava.ai.model.entity.SysAiMessage;
 import com.wejava.ai.model.entity.SysAiSession;
 import com.wejava.ai.model.form.AiChatForm;
@@ -36,7 +37,7 @@ public class AiChatServiceImpl implements AiChatService {
     private final SysAiSessionMapper sessionMapper;
     private final SysAiMessageMapper messageMapper;
     private final AiConfigService aiConfigService;
-    private final DeepSeekClient client;
+    private final OpenAiCompatibleClient client;
     private final ExecutorService aiExecutor;
 
     @Value("${DEEPSEEK_API_KEY:}")
@@ -46,7 +47,7 @@ public class AiChatServiceImpl implements AiChatService {
             SysAiSessionMapper sessionMapper,
             SysAiMessageMapper messageMapper,
             AiConfigService aiConfigService,
-            DeepSeekClient client,
+            OpenAiCompatibleClient client,
             @Qualifier(AsyncConfig.AI_EXECUTOR) ExecutorService aiExecutor) {
         this.sessionMapper = sessionMapper;
         this.messageMapper = messageMapper;
@@ -68,19 +69,24 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     private void doStream(Long userId, AiChatForm form, SseEmitter emitter, AtomicBoolean cancelled) {
-        if (!aiConfigService.enabled()) {
-            sendError(emitter, "AI 功能已停用，请在「AI 配置」中启用");
+        AiChatConfig config = aiConfigService.resolve(form.getConfigId());
+        if (config == null) {
+            sendError(emitter, "没有可用的 AI 端点，请在「AI 配置」中新增并启用一个端点");
             return;
         }
 
-        String apiKey = resolveApiKey();
+        String apiKey = config.apiKey();
         if (apiKey == null) {
-            sendError(emitter, "未配置 DeepSeek API Key，请在环境变量 DEEPSEEK_API_KEY 或参数设置中配置");
+            // 兼容老部署：允许用环境变量兜底
+            apiKey = apiKeyFromEnv != null && !apiKeyFromEnv.isBlank() ? apiKeyFromEnv.trim() : null;
+        }
+        if (apiKey == null) {
+            sendError(emitter, "该端点还没有配置 API Key，请在「AI 配置」中填写");
             return;
         }
 
-        SysAiSession session = ensureSession(userId, form);
-        saveMessage(session.getSessionId(), "user", form.getContent(), null, null, null);
+        SysAiSession session = ensureSession(userId, form, config.model());
+        saveMessage(session.getSessionId(), "user", form.getContent(), null, null, null, config.id(), config.model());
 
         List<SysAiMessageView> history = loadHistory(session.getSessionId());
         StringBuilder answer = new StringBuilder();
@@ -89,9 +95,9 @@ public class AiChatServiceImpl implements AiChatService {
 
         try {
             client.stream(
-                    aiConfigService.baseUrl(),
+                    config.baseUrl(),
                     apiKey,
-                    aiConfigService.model(),
+                    config.model(),
                     history.stream()
                             .map(item -> Map.of("role", item.role(), "content", item.content()))
                             .toList(),
@@ -112,7 +118,15 @@ public class AiChatServiceImpl implements AiChatService {
                     });
 
             long cost = System.currentTimeMillis() - start;
-            saveMessage(session.getSessionId(), "assistant", answer.toString(), usage[0], usage[1], cost);
+            saveMessage(
+                    session.getSessionId(),
+                    "assistant",
+                    answer.toString(),
+                    usage[0],
+                    usage[1],
+                    cost,
+                    config.id(),
+                    config.model());
 
             emitter.send(SseEmitter.event()
                     .name("done")
@@ -149,7 +163,7 @@ public class AiChatServiceImpl implements AiChatService {
                 .toList();
     }
 
-    private SysAiSession ensureSession(Long userId, AiChatForm form) {
+    private SysAiSession ensureSession(Long userId, AiChatForm form, String model) {
         if (form.getSessionId() != null) {
             SysAiSession exist = sessionMapper.selectById(form.getSessionId());
             if (exist == null || !exist.getUserId().equals(userId)) {
@@ -162,7 +176,7 @@ public class AiChatServiceImpl implements AiChatService {
         SysAiSession session = new SysAiSession();
         session.setUserId(userId);
         session.setTitle(form.getContent().length() > 30 ? form.getContent().substring(0, 30) : form.getContent());
-        session.setModel(aiConfigService.model());
+        session.setModel(model);
         session.setCreateTime(LocalDateTime.now());
         session.setUpdateTime(LocalDateTime.now());
         sessionMapper.insert(session);
@@ -188,8 +202,12 @@ public class AiChatServiceImpl implements AiChatService {
             String content,
             Integer promptTokens,
             Integer completionTokens,
-            Long durationMs) {
+            Long durationMs,
+            Long configId,
+            String model) {
         SysAiMessage message = new SysAiMessage();
+        message.setConfigId(configId);
+        message.setModel(model);
         message.setSessionId(sessionId);
         message.setRole(role);
         message.setContent(content);
@@ -198,14 +216,6 @@ public class AiChatServiceImpl implements AiChatService {
         message.setDurationMs(durationMs);
         message.setCreateTime(LocalDateTime.now());
         messageMapper.insert(message);
-    }
-
-    /** 环境变量优先，其次「AI 配置」页保存的加密值 */
-    private String resolveApiKey() {
-        if (apiKeyFromEnv != null && !apiKeyFromEnv.isBlank()) {
-            return apiKeyFromEnv.trim();
-        }
-        return aiConfigService.plainApiKey();
     }
 
     private void sendError(SseEmitter emitter, String message) {
