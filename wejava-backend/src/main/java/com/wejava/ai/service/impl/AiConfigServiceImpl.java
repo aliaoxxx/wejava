@@ -212,12 +212,20 @@ public class AiConfigServiceImpl implements AiConfigService {
         return url;
     }
 
+    /**
+     * 把除 {@code keepId} 之外的端点取消默认标记。
+     *
+     * <p>项目里注册了 {@code BlockAttackInnerInterceptor}（禁止全表更新），
+     * 批量 set 会被拦下，这里改成按主键逐条更新 —— 端点数量个位数，开销可忽略。
+     */
     private void clearDefault(Long keepId) {
-        configMapper.update(
-                null,
-                Wrappers.<SysAiConfig>lambdaUpdate()
-                        .set(SysAiConfig::getIsDefault, 0)
-                        .ne(SysAiConfig::getAiConfigId, keepId));
+        List<SysAiConfig> others = configMapper.selectList(Wrappers.<SysAiConfig>lambdaQuery()
+                .eq(SysAiConfig::getIsDefault, 1)
+                .ne(SysAiConfig::getAiConfigId, keepId));
+        for (SysAiConfig other : others) {
+            other.setIsDefault(0);
+            configMapper.updateById(other);
+        }
     }
 
     private SysAiConfig requireById(Long id) {
