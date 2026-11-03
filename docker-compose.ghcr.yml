@@ -1,0 +1,17 @@
+# 用「预构建镜像」启动，跳过本地构建（首次约 1 分钟，而不是 5–10 分钟）
+#
+# 前提：Docker Compose v2.24+（用到了 !reset 语法）
+# 用法：
+#   docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+#   指定版本：
+#   TAG=v0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+#
+# 镜像由 .github/workflows/release.yml 在打 tag 时构建推送。
+services:
+  backend:
+    image: ${IMAGE_PREFIX:-ghcr.io/aliaoxxx}/wejava-backend:${TAG:-latest}
+    build: !reset null
+
+  frontend:
+    image: ${IMAGE_PREFIX:-ghcr.io/aliaoxxx}/wejava-frontend:${TAG:-latest}
+    build: !reset null

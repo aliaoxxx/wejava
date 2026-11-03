@@ -14,6 +14,7 @@ English | [简体中文](README.zh-CN.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](#技术栈)
 [![Vue](https://img.shields.io/badge/Vue-3.5-42b883.svg)](#技术栈)
+[![Release](https://img.shields.io/github/v/release/aliaoxxx/wejava)](https://github.com/aliaoxxx/wejava/releases)
 
 ## 界面预览
 
@@ -42,6 +43,8 @@ open http://localhost:3300/     # Windows 用 start http://localhost:3300/
 
 > 首次启动会拉取镜像并在容器内编译前后端（**约 5–10 分钟**，取决于网络）。
 > 之后 `docker compose up -d` 大约 **20 秒**就能就绪。
+>
+> **不想本地构建？** 每个 Release 都会推送预构建镜像，见下方「预构建镜像」。
 
 首次启动会自动建库、建表并写入种子数据（Flyway），**不需要手工执行任何 SQL**。
 
@@ -65,6 +68,24 @@ docker compose down -v           # 停止并删除数据卷，下次启动是全
 
 > MySQL 与 Redis 默认不映射到宿主机端口（只走容器网络）。需要从本机连库调试时，
 > 在 `docker-compose.yml` 里给对应服务加 `ports: ["127.0.0.1:3307:3306"]` 即可。
+
+### 预构建镜像（`docker-compose -f ... -f ...`）
+
+每个 Release 都会把镜像推到 GitHub Container Registry，可以直接跳过本地构建：
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+需要 Docker Compose **v2.24+**（overlay 用了 `!reset` 语法）。固定版本：
+
+```bash
+TAG=v0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+镜像：`ghcr.io/aliaoxxx/wejava-backend`、`ghcr.io/aliaoxxx/wejava-frontend`。
+不加 overlay 时，`docker compose up -d` 仍是本地构建源码（首次 5–10 分钟）。
 
 ## 特性
 

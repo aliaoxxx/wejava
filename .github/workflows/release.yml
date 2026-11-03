@@ -1,0 +1,165 @@
+name: Release
+
+# 打 tag 即发布：
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# 产出：
+#   1. GitHub Release：自动生成变更说明，附带可长期下载的 WAR 与前端包
+#   2. GHCR 镜像：ghcr.io/<owner>/wejava-backend 与 -frontend
+#
+# 说明：CI（ci.yml）只做校验，产物 7 天过期；这里是「可分发」的那一份。
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的版本号（如 v0.1.0）'
+        required: true
+
+permissions:
+  contents: write    # 创建 Release
+  packages: write    # 推送 GHCR 镜像
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/wejava-backend
+  IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/wejava-frontend
+
+jobs:
+  build:
+    name: 构建产物
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: wejava-frontend/package.json
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: wejava-frontend/pnpm-lock.yaml
+
+      - name: 后端打包（WAR）
+        working-directory: wejava-backend
+        run: |
+          mvn -B -ntp spotless:check
+          mvn -B -ntp package -Pprod -DskipTests
+
+      - name: 前端构建（根路径部署形态）
+        working-directory: wejava-frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build:root
+
+      - name: 整理发布文件
+        run: |
+          mkdir -p release
+          cp "wejava-backend/target/prod#api.war" release/wejava-backend.war
+          (cd wejava-frontend/dist && zip -qr ../../release/wejava-frontend-dist.zip .)
+          ls -lh release
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: release/*
+          retention-days: 7
+
+  release:
+    name: 创建 Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: release-files
+          path: release
+
+      - name: 发布
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            release/wejava-backend.war \
+            release/wejava-frontend-dist.zip \
+            --title "$TAG" \
+            --generate-notes \
+            --notes "> Docker 用户可直接使用 \`ghcr.io/${{ github.repository_owner }}/wejava-backend:$TAG\` 与 \`-frontend:$TAG\`。"
+
+  images:
+    name: 推送镜像到 GHCR
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 镜像元数据（后端）
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_BACKEND }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      - name: 构建并推送后端镜像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: wejava-backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: 镜像元数据（前端）
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_FRONTEND }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      - name: 构建并推送前端镜像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: wejava-frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend

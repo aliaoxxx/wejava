@@ -14,6 +14,7 @@ Authentication uses a **self-managed JWT with a Redis session whitelist** — no
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](#tech-stack)
 [![Vue](https://img.shields.io/badge/Vue-3.5-42b883.svg)](#tech-stack)
+[![Release](https://img.shields.io/github/v/release/aliaoxxx/wejava)](https://github.com/aliaoxxx/wejava/releases)
 
 ## Screenshots
 
@@ -42,6 +43,9 @@ Sign in with `admin / admin123`.
 
 > The first run pulls images and compiles the backend/frontend inside containers (**5–10 minutes** depending on network).
 > After that, `docker compose up -d` is ready in about **20 seconds**.
+>
+> **Prefer not to build at all?** Every release publishes prebuilt images — see
+> [Prebuilt images](#prebuilt-images-docker-compose---f-docker-composeghcryml) below.
 
 The database, tables and seed data are created automatically by Flyway on first start — **no manual SQL needed**.
 
@@ -65,6 +69,24 @@ To change ports, passwords or secrets: `cp .env.example .env`, edit, then `docke
 
 > MySQL and Redis are not published to the host. To connect from your machine for debugging,
 > add `ports: ["127.0.0.1:3307:3306"]` to the service in `docker-compose.yml`.
+
+### Prebuilt images (`docker-compose -f ... -f ...`)
+
+Every release publishes two images to GitHub Container Registry, so you can skip the local build entirely:
+
+```bash
+git clone https://github.com/aliaoxxx/wejava.git && cd wejava
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+Requires Docker Compose **v2.24+** (the overlay uses `!reset`). Pin a version with
+
+```bash
+TAG=v0.1.0 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+Images: `ghcr.io/aliaoxxx/wejava-backend` and `ghcr.io/aliaoxxx/wejava-frontend`.
+Without the overlay, `docker compose up -d` builds locally from source (5–10 minutes the first time).
 
 ## Features
 
