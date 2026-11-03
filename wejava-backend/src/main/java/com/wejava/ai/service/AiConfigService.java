@@ -3,7 +3,7 @@ package com.wejava.ai.service;
 import com.wejava.ai.model.bo.AiChatConfig;
 import com.wejava.ai.model.form.AiConfigForm;
 import com.wejava.ai.model.vo.AiConfigVO;
-import com.wejava.ai.provider.AiProvider;
+import com.wejava.ai.model.vo.AiProviderVO;
 import java.util.List;
 
 public interface AiConfigService {
@@ -24,7 +24,7 @@ public interface AiConfigService {
     void setDefault(Long id);
 
     /** 厂商预设，供前端下拉 */
-    List<AiProvider> providers();
+    List<AiProviderVO> providers();
 
     /** 拉取该端点支持的模型列表 */
     List<String> listModels(Long id);

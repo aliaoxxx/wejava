@@ -7,6 +7,7 @@ import com.wejava.ai.model.bo.AiChatConfig;
 import com.wejava.ai.model.entity.SysAiConfig;
 import com.wejava.ai.model.form.AiConfigForm;
 import com.wejava.ai.model.vo.AiConfigVO;
+import com.wejava.ai.model.vo.AiProviderVO;
 import com.wejava.ai.provider.AiProvider;
 import com.wejava.ai.service.AiConfigService;
 import com.wejava.common.exception.BizException;
@@ -111,8 +112,8 @@ public class AiConfigServiceImpl implements AiConfigService {
     }
 
     @Override
-    public List<AiProvider> providers() {
-        return AiProvider.all();
+    public List<AiProviderVO> providers() {
+        return AiProvider.all().stream().map(AiProviderVO::of).toList();
     }
 
     @Override

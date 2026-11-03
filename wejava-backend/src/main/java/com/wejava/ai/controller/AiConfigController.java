@@ -2,7 +2,7 @@ package com.wejava.ai.controller;
 
 import com.wejava.ai.model.form.AiConfigForm;
 import com.wejava.ai.model.vo.AiConfigVO;
-import com.wejava.ai.provider.AiProvider;
+import com.wejava.ai.model.vo.AiProviderVO;
 import com.wejava.ai.service.AiConfigService;
 import com.wejava.common.annotation.BusinessType;
 import com.wejava.common.annotation.OperLog;
@@ -42,7 +42,7 @@ public class AiConfigController {
 
     @PreAuthorize("@ps.has('system:ai:config')")
     @GetMapping("/providers")
-    public R<List<AiProvider>> providers() {
+    public R<List<AiProviderVO>> providers() {
         return R.ok(configService.providers());
     }
 
