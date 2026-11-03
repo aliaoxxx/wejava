@@ -18,6 +18,7 @@ The authentication scheme is **self-managed JWT + Redis session whitelist** (no 
 | [05-development-conventions](05-development-conventions.md) | Layering, naming, DTO/VO/Converter, pagination, transactions, MyBatis-Plus and XML conventions | [05-开发规范](../05-开发规范.md) |
 | [06-schema-driven-crud](06-schema-driven-crud.md) | CRUD schema, useCrud, three-layer strategy, rollout order | [06-前端配置驱动设计](../06-前端配置驱动设计.md) |
 | [07-deployment](07-deployment.md) | WAR + Nginx deployment, path prefix, release and rollback | [07-部署方案](../07-部署方案.md) |
+| [08-ai-multi-provider](08-ai-multi-provider.md) | Multi-endpoint AI config, protocol adaptation, model switching, vendor presets | [08-AI 多服务商设计](../08-AI多服务商设计.md) |
 | [pitfalls](pitfalls.md) | Risk items to check one by one before going live | [避坑清单](../避坑清单.md) |
 | [deployment guide](../../deploy/en/README.md) | Three paths: VPS / Render / Alibaba Cloud, HTTPS, security baseline | [部署指南](../../deploy/README.md) |
 | [demo-script](demo-script.md) | 60-second recording storyboard: open → sign in → create user → monitor | [演示脚本](../demo-script.md) |

@@ -18,6 +18,7 @@
 | [05-开发规范](05-开发规范.md) | 分层、命名、DTO/VO/Converter、分页、事务、MyBatis-Plus 与 XML 规范 | [05-development-conventions](en/05-development-conventions.md) |
 | [06-前端配置驱动设计](06-前端配置驱动设计.md) | CRUD Schema、useCrud、三层策略、落地顺序 | [06-schema-driven-crud](en/06-schema-driven-crud.md) |
 | [07-部署方案](07-部署方案.md) | WAR + Nginx 部署、路径前缀、发版回滚 | [07-deployment](en/07-deployment.md) |
+| [08-AI 多服务商设计](08-AI多服务商设计.md) | 多端点配置、协议适配、模型切换、厂商预设 | [08-ai-multi-provider](en/08-ai-multi-provider.md) |
 | [避坑清单](避坑清单.md) | 上线前逐条核对的风险项 | [pitfalls](en/pitfalls.md) |
 | [公网部署指南](../deploy/README.md) | VPS / Render / 阿里云三条路径、HTTPS、公网演示安全底线 | [deploy-guide](../deploy/en/README.md) |
 | [演示脚本](demo-script.md) | 60 秒录屏分镜：打开 → 登录 → 新增用户 → 看监控 | [demo-script](en/demo-script.md) |

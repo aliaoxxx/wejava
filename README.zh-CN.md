@@ -136,6 +136,7 @@ docker compose down -v           # 停止并删除数据卷，下次启动是全
 - [开发规范](docs/05-开发规范.md)
 - [前端配置驱动设计](docs/06-前端配置驱动设计.md)
 - [部署方案](docs/07-部署方案.md)
+- [AI 多服务商设计](docs/08-AI多服务商设计.md)
 - [避坑清单](docs/避坑清单.md)
 - [演示脚本](docs/demo-script.md)
 

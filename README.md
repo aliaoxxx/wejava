@@ -136,6 +136,7 @@ The table below lists the Chinese originals; every one has an English counterpar
 - [开发规范](docs/05-开发规范.md) — development conventions
 - [前端配置驱动设计](docs/06-前端配置驱动设计.md) — schema-driven frontend
 - [部署方案](docs/07-部署方案.md) — deployment
+- [AI 多服务商设计](docs/08-AI多服务商设计.md) — AI multi-provider design
 - [避坑清单](docs/避坑清单.md) — pitfalls checklist
 - [演示脚本](docs/demo-script.md) — 60-second demo storyboard
 
