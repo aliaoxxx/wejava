@@ -96,6 +96,36 @@ Spring Boot 4 is not "just change the version number" — it simultaneously swit
 - [ ] 🟡 **Run `spring-boot-properties-migrator` over the configuration**
   Add it temporarily as a runtime dependency; at startup it prints all obsolete configuration items. Remember to remove it after fixing them.
 
+- [ ] 🔴 **Not every dependency warning can be fixed — check scope first, then upstream**
+
+  IDEs and Dependabot also report transitive dependencies that are **test-scoped**; their risk
+  profile is completely different. Workflow: `mvn dependency:tree -Dincludes=groupId:artifactId`
+  → check the scope → look up the advisory's affected range and fixed version → override if
+  possible, otherwise record it as accepted risk.
+
+  Spring Boot 4.1.2 is the newest 4.1.x, so patches must be pinned through `<properties>`
+  (verified in this project):
+
+  | Property | Boot manages | This project | Basis |
+  |---|---|---|---|
+  | `logback.version` | 1.5.38 | **1.6.6** | CVE-2026-19880 affects 0.9.14–1.6.2, fixed in 1.6.3 |
+  | `jackson-bom.version` | 3.1.7 | **3.1.8** | CVE-2026-110879 (PolymorphicTypeValidator bypass) |
+  | `jackson-2-bom.version` | 2.21.7 | **2.21.8** | same, Jackson 2 line |
+  | `mysql.version` | 9.7.0 | **26.10.0** | CVE-2026-60586 and friends, affected through 9.7.x |
+
+  Two test-scoped cases:
+
+  - `org.ow2.asm:asm` 9.7.1 → **9.11.1** (Boot does not manage it; declare it in `dependencyManagement`)
+  - `com.vaadin.external.google:android-json` is **excluded**: unmaintained upstream with no fix,
+    Android-only, and JVM tests use json-smart
+
+  Accepted risk: `net.minidev:json-smart` 2.6.0 is the current release and the advisory says
+  "through 2.6.0", i.e. no fix yet; test scope only, never shipped in the WAR.
+
+- [ ] 🟢 **Verify after overriding**: confirm with `mvn dependency:tree`, then run tests,
+  package, and boot the real application (logback 1.6 against Boot 4.1 logging, the MySQL
+  driver generation jump).
+
 - [ ] 🟢 **Pin dependency versions**: archive `mvn dependency:tree`, diff it in CI, to prevent some merge from silently downgrading a version.
 
 ---
