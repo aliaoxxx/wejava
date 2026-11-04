@@ -4,7 +4,7 @@
 
 > Goal: read a database table → generate 9 backend files + frontend `api.ts` / `schema.ts` + menu SQL,
 > turning "add a table" from **half a day of hand-writing** into **one minute**.
-> Status: **design draft** (pending review, not implemented).
+> Status: **P1 implemented** (V16 migration + import/config/preview/download + 12 templates + UI).
 
 ---
 
@@ -206,6 +206,30 @@ New menu "系统工具 → 代码生成". The page is hand-written (it is specia
 - [ ] Generated `menu.sql` yields menus and button permissions
 - [ ] Preview output matches the downloaded zip
 - [ ] Non-admin requests to generator endpoints return 403
+
+## 13. Implementation notes (P1)
+
+| Item | Result |
+|---|---|
+| Migration | `V16__code_generator.sql`: two config tables + menu with five button permissions |
+| Templates | 12 `.ftl` files under `resources/template/gen/` |
+| Output | **13 files** per generation (12 code/config + `README.txt`) |
+| UI | 系统管理 → 代码生成: list / import / edit / preview / download / delete |
+
+**A detail worth recording**: the templates must decide line wrapping according to palantir's
+120-column rule; otherwise the generated code compiles but fails `spotless:check`. The model
+estimates width as `83 + 3 × field name length + class name length` and only emits the wrapped
+form above 120.
+
+**Measured on a `demo_product` table**:
+
+```
+inference    long text → textarea, status → switch + dict, audit columns hidden in forms
+backend      9 Java files compile on the first try, spotless:check passes unchanged
+frontend     schema.ts passes vue-tsc, api.ts passes lint
+menu SQL     menu + 5 button permissions, granted to role_id=1
+download     zip 8.2 KB, layout matches the design
+```
 
 ## 12. Explicit non-goals
 
