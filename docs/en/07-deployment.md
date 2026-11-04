@@ -110,7 +110,30 @@ After startup, visiting `http://127.0.0.1:8080/prod/api/ping` should return `{"c
 ```bash
 rm -rf /opt/wejava/frontend/prod/*
 cp -r wejava-frontend/dist/* /opt/wejava/frontend/prod/
+
+# Static landing page (separate directory, survives the rm above)
+mkdir -p /opt/wejava/landing
+rm -rf /opt/wejava/landing/*
+cp -r landing/* /opt/wejava/landing/
+chmod -R a+rX /opt/wejava/landing
 ```
+
+### Why a separate landing page
+
+The app is a Vue SPA: `curl` returns a shell with nothing but `<div id="app"></div>`.
+Baiduspider and GPTBot / ClaudeBot / PerplexityBot do not execute JavaScript, so they see
+an empty page — useless for SEO and GEO.
+
+So `/` is served by a **pure static** landing page (intro, features, screenshots, FAQ,
+structured data), while the app keeps answering at the same level (`/login`, `/dashboard`).
+The SPA shell carries `noindex` so the empty pages are not indexed.
+
+| Path | Content | Audience |
+|---|---|---|
+| `/` | static `landing/index.html` | search engines, AI crawlers, first-time visitors |
+| `/robots.txt`, `/sitemap.xml` | SEO files | crawlers |
+| `/login`, `/dashboard`, … | SPA | signed-in users |
+| `/prod/api/**` | backend API | the app |
 
 Nginx `root` must point at the `prod` level (not its parent), otherwise in the root-path
 shape `/assets/app.js` resolves to `/opt/wejava/frontend/assets/app.js` and 404s.
@@ -125,7 +148,20 @@ server {
     listen 80;
     server_name admin.example.com;
 
-    # ---------- Frontend: root path ----------
+    # ---------- Static landing page: exact match on /, wins over the prefix below ----------
+    location = / {
+        root /opt/wejava/landing;
+        try_files /index.html =404;
+    }
+
+    location ^~ /landing-assets/ {
+        root /opt/wejava/landing;
+    }
+
+    location = /robots.txt  { root /opt/wejava/landing; }
+    location = /sitemap.xml { root /opt/wejava/landing; }
+
+    # ---------- Frontend app: root path ----------
     location / {
         root /opt/wejava/frontend/prod;
         try_files $uri $uri/ /index.html;

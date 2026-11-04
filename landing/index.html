@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeJava Admin · 企业级 Java 后台管理框架</title>
+    <meta
+      name="description"
+      content="WeJava Admin 是一套开箱即用的企业级后台管理框架：Spring Boot 4.1 + Vue 3.5 + MySQL + Redis，内置 RBAC 权限、数据权限、操作日志、SSE 通知与多服务商 AI 助手，支持 Docker 一键启动与 WAR 部署。"
+    />
+    <meta name="keywords" content="Java 后台管理框架,Spring Boot 4,Vue3 管理后台,开源后台,RBAC 权限管理,AI 后台,admin framework" />
+    <meta name="author" content="aliaoxxx" />
+    <link rel="canonical" href="https://wejava.bzsure.com/" />
+    <meta name="theme-color" content="#3B6EF6" />
+    <link rel="icon" type="image/svg+xml" href="/landing-assets/logo-mark.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="WeJava Admin" />
+    <meta property="og:title" content="WeJava Admin · 企业级 Java 后台管理框架" />
+    <meta
+      property="og:description"
+      content="Spring Boot 4.1 + Vue 3.5，内置 RBAC、数据权限、操作日志、SSE 通知与多服务商 AI 助手，Docker 一键启动。"
+    />
+    <meta property="og:url" content="https://wejava.bzsure.com/" />
+    <meta property="og:image" content="https://wejava.bzsure.com/landing-assets/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "WeJava Admin",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Web, Linux, Docker",
+            "description": "企业级 Java 后台管理框架，Spring Boot 4.1 + Vue 3.5，内置 RBAC 权限、数据权限、操作日志、SSE 通知与多服务商 AI 助手。",
+            "url": "https://wejava.bzsure.com/",
+            "license": "https://opensource.org/licenses/MIT",
+            "programmingLanguage": ["Java", "TypeScript"],
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+            "sameAs": ["https://github.com/aliaoxxx/wejava"]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "WeJava Admin 可以商用吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以。项目采用 MIT 协议，允许商用、修改、二次分发，只需保留版权声明。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "和 RuoYi 等传统后台框架有什么区别？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "WeJava Admin 基于 Spring Boot 4.1、Spring Security 7 与 Jackson 3，前端为 Vue 3.5 组合式 API，权限校验在接口层用 @PreAuthorize 与数据权限 SQL 改写实现，并内置多服务商 AI 助手，不是基于 Servlet 时代技术栈的脚手架。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "怎么部署？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "三种方式：docker compose up -d 一键启动；打 WAR 包部署到 Tomcat 11 并用 Nginx 反代；本地开发用 Maven 与 pnpm 分别启动。"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      :root {
+        --brand: #3b6ef6;
+        --brand-dark: #2a55d0;
+        --ink: #111827;
+        --muted: #5b6472;
+        --line: #e6e9ef;
+        --bg: #ffffff;
+        --bg-soft: #f7f9fc;
+        --radius: 14px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--bg);
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; text-decoration: none; }
+      img { max-width: 100%; display: block; }
+      .wrap { width: min(1120px, 92vw); margin: 0 auto; }
+
+      /* ---------- 顶部导航 ---------- */
+      header {
+        position: sticky; top: 0; z-index: 20;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: saturate(180%) blur(12px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+      .brand img { width: 30px; height: 30px; }
+      .nav-links { display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--muted); }
+      .nav-links a:hover { color: var(--brand); }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        height: 40px; padding: 0 20px; border-radius: 10px; font-size: 14px; font-weight: 600;
+        border: 1px solid transparent; cursor: pointer; transition: 0.18s ease; white-space: nowrap;
+      }
+      .btn-primary { background: var(--brand); color: #fff; }
+      .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+      .btn-ghost { border-color: var(--line); color: var(--ink); background: #fff; }
+      .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+
+      /* ---------- 首屏 ---------- */
+      .hero { padding: 84px 0 64px; text-align: center; background:
+          radial-gradient(900px 420px at 50% -120px, #e8efff 0%, rgba(255,255,255,0) 70%); }
+      .badge {
+        display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px;
+        background: #eef3ff; color: var(--brand-dark); font-size: 13px; font-weight: 600;
+      }
+      .hero h1 { font-size: clamp(30px, 4.6vw, 52px); line-height: 1.2; margin: 22px 0 18px; letter-spacing: -0.02em; }
+      .hero h1 em { font-style: normal; color: var(--brand); }
+      .hero p.lead { font-size: clamp(15px, 1.6vw, 18px); color: var(--muted); max-width: 720px; margin: 0 auto 32px; }
+      .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+      .stack { margin-top: 42px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+      .chip {
+        font-size: 13px; color: var(--muted); background: var(--bg-soft);
+        border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px;
+      }
+
+      /* ---------- 截图 ---------- */
+      .shot { margin: 8px auto 0; border-radius: var(--radius); overflow: hidden;
+        border: 1px solid var(--line); box-shadow: 0 24px 60px -28px rgba(17, 24, 39, 0.35);
+        aspect-ratio: 16 / 9; object-fit: cover; object-position: top center; width: 100%; height: auto; }
+      section { padding: 72px 0; }
+      section.soft { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      h2 { font-size: clamp(22px, 2.6vw, 30px); margin: 0 0 10px; letter-spacing: -0.01em; }
+      .section-lead { color: var(--muted); margin: 0 0 36px; font-size: 15px; }
+
+      /* ---------- 功能卡 ---------- */
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+      .card {
+        background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px;
+        transition: 0.2s ease;
+      }
+      .card:hover { border-color: #c9d6ff; box-shadow: 0 12px 30px -20px rgba(59, 110, 246, 0.5); }
+      .card h3 { margin: 0 0 8px; font-size: 16px; }
+      .card p { margin: 0; color: var(--muted); font-size: 14px; }
+      .icon {
+        width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+        background: #eef3ff; color: var(--brand); margin-bottom: 14px; font-size: 18px;
+      }
+
+      /* ---------- 截图组 ---------- */
+      .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+      .shots figure { margin: 0; }
+      .shots figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
+      .shots img {
+        width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center;
+        border: 1px solid var(--line); border-radius: 10px;
+      }
+
+      /* ---------- 快速开始 ---------- */
+      pre {
+        background: #0f172a; color: #d7e0f4; padding: 20px 22px; border-radius: 12px;
+        overflow-x: auto; font-size: 13.5px; line-height: 1.75;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      pre .c { color: #7c89a8; }
+      pre .g { color: #7ee2a8; }
+
+      /* ---------- FAQ ---------- */
+      details {
+        border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; margin-bottom: 12px;
+        background: #fff;
+      }
+      details[open] { border-color: #c9d6ff; }
+      summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; }
+      summary::-webkit-details-marker { display: none; }
+      summary::after { content: "+"; float: right; color: var(--brand); font-weight: 700; }
+      details[open] summary::after { content: "−"; }
+      details p { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+
+      /* ---------- 页脚 ---------- */
+      footer { border-top: 1px solid var(--line); padding: 36px 0; color: var(--muted); font-size: 13.5px; }
+      .foot { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+      .foot a { color: var(--brand); }
+
+      @media (max-width: 720px) {
+        .nav-links { display: none; }
+        .hero { padding: 56px 0 40px; }
+        section { padding: 52px 0; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="/">
+          <img src="/landing-assets/logo-mark.svg" alt="WeJava Admin logo" width="30" height="30" />
+          WeJava Admin
+        </a>
+        <nav class="nav-links">
+          <a href="#features">功能</a>
+          <a href="#screens">界面</a>
+          <a href="#start">快速开始</a>
+          <a href="#faq">常见问题</a>
+          <a href="https://github.com/aliaoxxx/wejava" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+        <a class="btn btn-primary" href="/login">登录</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <span class="badge">MIT 开源 · Spring Boot 4.1 · Vue 3.5</span>
+          <h1>企业级 <em>Java 后台管理框架</em><br />开箱即用的权限与工程底座</h1>
+          <p class="lead">
+            内置 RBAC 权限、行级数据权限、操作日志、在线用户、SSE 实时通知与多服务商 AI 助手。
+            前端配置驱动 CRUD，后端分层清晰，Docker 一条命令启动。
+          </p>
+          <div class="cta">
+            <a class="btn btn-primary" href="/login">进入系统</a>
+            <a class="btn btn-ghost" href="https://github.com/aliaoxxx/wejava" target="_blank" rel="noopener">
+              GitHub 仓库
+            </a>
+          </div>
+          <div class="stack">
+            <span class="chip">JDK 17</span>
+            <span class="chip">Spring Boot 4.1.2</span>
+            <span class="chip">Spring Security 7</span>
+            <span class="chip">MyBatis-Plus 3.5</span>
+            <span class="chip">Vue 3.5 + Element Plus</span>
+            <span class="chip">MySQL 8.4 / Redis 7</span>
+            <span class="chip">Tomcat 11</span>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding-top: 0">
+        <div class="wrap">
+          <img
+            class="shot"
+            src="/landing-assets/user-list.png"
+            alt="WeJava Admin 用户管理页面：搜索条件、批量操作、数据表格与分页"
+            width="1440"
+            height="900"
+            fetchpriority="high"
+          />
+        </div>
+      </section>
+
+      <section id="features" class="soft">
+        <div class="wrap">
+          <h2>不只是脚手架，是一套可以交付的系统</h2>
+          <p class="section-lead">每个模块都在真实部署环境验证过，不是 Demo。</p>
+          <div class="grid">
+            <div class="card">
+              <div class="icon">🔐</div>
+              <h3>认证与会话</h3>
+              <p>自建 JWT + Redis 会话白名单，访问令牌 30 分钟、刷新令牌 7 天并轮换，登录失败自动锁定。</p>
+            </div>
+            <div class="card">
+              <div class="icon">🛡️</div>
+              <h3>权限体系</h3>
+              <p>RBAC 菜单与按钮权限、行级数据权限（基于 SQL 解析器改写）、接口层 @PreAuthorize 双重校验。</p>
+            </div>
+            <div class="card">
+              <div class="icon">⚡</div>
+              <h3>配置驱动 CRUD</h3>
+              <p>一个 schema 文件生成完整增删改查页面，搜索、分页、表单校验、字典回显全部自动完成。</p>
+            </div>
+            <div class="card">
+              <div class="icon">🤖</div>
+              <h3>多服务商 AI 助手</h3>
+              <p>支持 DeepSeek、智谱、通义、Kimi 等 OpenAI 兼容端点，可配置多个，聊天时自由切换模型。</p>
+            </div>
+            <div class="card">
+              <div class="icon">📈</div>
+              <h3>运维可视化</h3>
+              <p>操作日志、登录日志、在线用户强制下线、服务器监控、SSE 实时通知推送。</p>
+            </div>
+            <div class="card">
+              <div class="icon">🚀</div>
+              <h3>三种部署形态</h3>
+              <p>Docker Compose 一键启动、WAR 部署到 Tomcat 11、本地前后端分离开发。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="screens">
+        <div class="wrap">
+          <h2>界面预览</h2>
+          <p class="section-lead">真实运行截图，非设计稿。</p>
+          <div class="shots">
+            <figure>
+              <img src="/landing-assets/ai-assistant.png" alt="AI 助手页面，顶部可选择模型，支持多服务商切换" loading="lazy" />
+              <figcaption>AI 助手 · 多模型切换</figcaption>
+            </figure>
+            <figure>
+              <img src="/landing-assets/monitor.png" alt="服务监控页面，展示 CPU、内存、磁盘等指标" loading="lazy" />
+              <figcaption>服务监控 · 资源指标</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="start" class="soft">
+        <div class="wrap">
+          <h2>三行命令跑起来</h2>
+          <p class="section-lead">需要 Docker；不打镜像的话，本地构建约 5–10 分钟。</p>
+          <pre><code><span class="c"># 克隆并启动</span>
+git clone https://github.com/aliaoxxx/wejava.git
+<span class="c"># 编译阶段约 5-10 分钟，之后 20 秒内就绪。如只需应用本身，可单独部署 WAR。</span>
+docker compose up -d
+<span class="c"># 账号 admin / admin123</span>
+<span class="g">http://localhost:3300/</span></code></pre>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="wrap">
+          <h2>常见问题</h2>
+          <p class="section-lead">关于协议、技术选型与部署。</p>
+
+          <details>
+            <summary>可以商用吗？</summary>
+            <p>可以。项目采用 MIT 协议，允许商用、修改、二次分发，只需保留版权声明。</p>
+          </details>
+
+          <details>
+            <summary>和 RuoYi 等传统后台框架有什么区别？</summary>
+            <p>
+              技术栈不同：WeJava Admin 基于 Spring Boot 4.1、Spring Security 7 与 Jackson 3，前端是 Vue 3.5
+              组合式 API。权限设计与传统框架不同：接口层用 <code>@PreAuthorize</code> 校验，数据权限通过 SQL
+              解析改写而不是在业务代码里手写条件。此外内置了多服务商 AI 助手。
+            </p>
+          </details>
+
+          <details>
+            <summary>怎么部署到自己的服务器？</summary>
+            <p>
+              三种方式：一是 <code>docker compose up -d</code> 一键启动；二是打包 WAR 部署到 Tomcat 11 并用
+              Nginx 反向代理；三是本地开发，Maven 与 pnpm 分别启动。详细步骤见仓库
+              <code>docs/07-部署方案.md</code>。
+            </p>
+          </details>
+
+          <details>
+            <summary>需要什么环境？</summary>
+            <p>JDK 17、MySQL 8.4+、Redis 7+；前端构建需要 Node 20+ 与 pnpm。使用 Docker 时无需预装。</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <span>© 2026 WeJava Admin · MIT License</span>
+        <span>
+          <a href="https://github.com/aliaoxxx/wejava" target="_blank" rel="noopener">GitHub</a>
+          ·
+          <a href="https://github.com/aliaoxxx/wejava/blob/main/docs/README.md" target="_blank" rel="noopener">文档</a>
+          ·
+          <a href="/login">登录</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
