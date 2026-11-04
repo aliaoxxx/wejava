@@ -1,11 +1,22 @@
 package ${table.packageName}.model.query;
 
-import com.wejava.common.core.PageQuery;
-<#list queryImports as imp>
+<#assign hasDate = false>
+<#list queryColumns as col>
+<#if col.javaType == "LocalDateTime" || col.javaType == "LocalDate">
+<#assign hasDate = true>
+</#if>
+</#list>
+<#assign queryImportsWithDate = queryImports + [
+    "com.wejava.common.core.PageQuery",
+    "lombok.Data",
+    "lombok.EqualsAndHashCode"
+]>
+<#if hasDate>
+<#assign queryImportsWithDate = queryImportsWithDate + ["org.springframework.format.annotation.DateTimeFormat"]>
+</#if>
+<#list queryImportsWithDate?sort as imp>
 import ${imp};
 </#list>
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /** ${table.functionName}查询条件 */
 @Data
@@ -15,9 +26,19 @@ public class ${table.className}Query extends PageQuery {
 <#if col.queryType == "BETWEEN">
 
     /** ${col.columnComment}起 */
+<#if col.javaType == "LocalDateTime">
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+<#elseif col.javaType == "LocalDate">
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+</#if>
     private ${col.javaType} begin${col.javaFieldCap};
 
     /** ${col.columnComment}止 */
+<#if col.javaType == "LocalDateTime">
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+<#elseif col.javaType == "LocalDate">
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+</#if>
     private ${col.javaType} end${col.javaFieldCap};
 <#else>
 

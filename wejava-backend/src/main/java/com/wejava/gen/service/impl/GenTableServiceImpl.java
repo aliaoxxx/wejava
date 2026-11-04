@@ -7,8 +7,10 @@ import com.wejava.common.exception.BizException;
 import com.wejava.common.exception.ErrorCode;
 import com.wejava.gen.mapper.GenTableColumnMapper;
 import com.wejava.gen.mapper.GenTableMapper;
+import com.wejava.gen.mapper.GenTemplateMapper;
 import com.wejava.gen.model.entity.GenTable;
 import com.wejava.gen.model.entity.GenTableColumn;
+import com.wejava.gen.model.entity.GenTemplate;
 import com.wejava.gen.model.form.GenTableColumnForm;
 import com.wejava.gen.model.form.GenTableForm;
 import com.wejava.gen.model.query.GenTableQuery;
@@ -16,6 +18,7 @@ import com.wejava.gen.model.vo.DbColumn;
 import com.wejava.gen.model.vo.DbTableVO;
 import com.wejava.gen.model.vo.GenTableColumnVO;
 import com.wejava.gen.model.vo.GenTableVO;
+import com.wejava.gen.model.vo.GenTemplateVO;
 import com.wejava.gen.service.GenTableService;
 import com.wejava.gen.support.ColumnTypes;
 import com.wejava.gen.support.GenModel;
@@ -26,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,8 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -51,6 +56,7 @@ public class GenTableServiceImpl implements GenTableService {
 
     private final GenTableMapper tableMapper;
     private final GenTableColumnMapper columnMapper;
+    private final GenTemplateMapper templateMapper;
     private final GenModel genModel;
     private final TemplateRenderer renderer;
 
@@ -125,12 +131,12 @@ public class GenTableServiceImpl implements GenTableService {
 
         int sort = 0;
         for (DbColumn dbColumn : dbColumns) {
-            GenTableColumn column = toColumn(table.getTableId(), dbColumn, sort++);
+            GenTableColumn column = toColumn(table, dbColumn, sort++);
             columnMapper.insert(column);
         }
     }
 
-    private GenTableColumn toColumn(Long tableId, DbColumn dbColumn, int sort) {
+    private GenTableColumn toColumn(GenTable table, DbColumn dbColumn, int sort) {
         String columnName = dbColumn.getColumnName();
         String columnType = dbColumn.getColumnType();
         String javaType = ColumnTypes.javaType(columnType);
@@ -142,7 +148,7 @@ public class GenTableServiceImpl implements GenTableService {
                 || "longtext".equals(ColumnTypes.baseType(columnType));
 
         GenTableColumn column = new GenTableColumn();
-        column.setTableId(tableId);
+        column.setTableId(table.getTableId());
         column.setColumnName(columnName);
         column.setColumnType(columnType);
         column.setColumnComment(
@@ -156,11 +162,16 @@ public class GenTableServiceImpl implements GenTableService {
         column.setIsRequired(isRequired(dbColumn, pk, audit) ? 1 : 0);
         column.setIsInsert(pk || audit ? 0 : 1);
         column.setIsEdit(pk || audit ? 0 : 1);
-        column.setIsList(blob ? 0 : 1);
+        column.setIsList(blob ? 0 : (audit && !ColumnTypes.isListVisibleAuditColumn(columnName) ? 0 : 1));
         column.setIsQuery(isQueryCandidate(columnName, javaType, pk, audit) ? 1 : 0);
         column.setQueryType(ColumnTypes.queryType(javaType, columnName));
         column.setHtmlType(ColumnTypes.htmlType(javaType, columnName, columnType));
-        column.setDictType(dictType(columnName));
+        String dict = dictType(table, columnName);
+        column.setDictType(dict);
+        // 绑定了字典的字符串列默认用下拉/单选，而不是文本框
+        if (dict != null && "input".equals(column.getHtmlType())) {
+            column.setHtmlType("select");
+        }
         column.setSort(sort);
         return column;
     }
@@ -180,15 +191,32 @@ public class GenTableServiceImpl implements GenTableService {
         if (QUERY_COLUMNS.contains(lower)) {
             return true;
         }
-        return lower.contains("name") || lower.endsWith("_code") || lower.contains("title");
+        if (lower.contains("name") || lower.endsWith("_code") || lower.contains("title")) {
+            return true;
+        }
+        // 编号、类型、状态、日期时间都是常见的筛选条件
+        return lower.endsWith("_no")
+                || lower.endsWith("_sn")
+                || lower.endsWith("_type")
+                || lower.endsWith("_status")
+                || lower.endsWith("_date")
+                || lower.endsWith("_time")
+                || lower.endsWith("_at");
     }
 
-    /** 常见状态列自动绑定字典 */
-    private String dictType(String columnName) {
-        return switch (columnName.toLowerCase()) {
+    /**
+     * 字典推断。
+     *
+     * <p>状态类列绑定系统通用字典；{@code xxx_type} 按项目惯例推断为
+     * {@code {module}_{business}_type}（如 biz_contract 的 contract_type
+     * → biz_contract_type），导入后可在页面上改成实际字典。
+     */
+    private String dictType(GenTable table, String columnName) {
+        String lower = columnName.toLowerCase();
+        return switch (lower) {
             case "status", "enabled", "visible" -> "sys_normal_disable";
             case "sex" -> "sys_user_sex";
-            default -> null;
+            default -> lower.endsWith("_type") ? table.getModuleName() + "_" + table.getBusinessName() + "_type" : null;
         };
     }
 
@@ -288,6 +316,125 @@ public class GenTableServiceImpl implements GenTableService {
         return buffer.toByteArray();
     }
 
+    @Override
+    public byte[] batchDownload(List<Long> tableIds) {
+        if (tableIds == null || tableIds.isEmpty()) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "请选择要生成的表");
+        }
+        if (tableIds.size() > MAX_BATCH) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "单次最多生成 " + MAX_BATCH + " 张表");
+        }
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(buffer, StandardCharsets.UTF_8)) {
+            for (Long tableId : tableIds) {
+                GenTable table = require(tableId);
+                // 每张表一个子目录，避免同名文件互相覆盖
+                zip.putNextEntry(new ZipEntry(table.getBusinessName() + "/README.txt"));
+                zip.write(readme(table).getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+                for (Map.Entry<String, String> entry : preview(tableId).entrySet()) {
+                    zip.putNextEntry(new ZipEntry(table.getBusinessName() + "/" + entry.getKey()));
+                    zip.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+                    zip.closeEntry();
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("打包失败：" + e.getMessage(), e);
+        }
+        return buffer.toByteArray();
+    }
+
+    @Override
+    public List<GenTemplateVO> templates() {
+        List<String> names = builtinTemplateNames();
+        List<GenTemplate> overrides = templateMapper.selectList(null);
+        return names.stream()
+                .map(name -> {
+                    GenTemplateVO vo = new GenTemplateVO();
+                    vo.setTemplateName(name);
+                    overrides.stream()
+                            .filter(item -> name.equals(item.getTemplateName()))
+                            .findFirst()
+                            .ifPresent(item -> {
+                                vo.setOverridden(true);
+                                vo.setContentLength(
+                                        item.getContent() == null
+                                                ? 0
+                                                : item.getContent().length());
+                                vo.setUpdateTime(item.getUpdateTime());
+                            });
+                    if (vo.getOverridden() == null) {
+                        vo.setOverridden(false);
+                        vo.setContentLength(renderer.readBuiltin(name).length());
+                    }
+                    return vo;
+                })
+                .toList();
+    }
+
+    @Override
+    public String templateContent(String templateName) {
+        GenTemplate override = templateMapper.selectOne(Wrappers.<GenTemplate>lambdaQuery()
+                .eq(GenTemplate::getTemplateName, templateName)
+                .last("LIMIT 1"));
+        if (override != null) {
+            return override.getContent();
+        }
+        return renderer.readBuiltin(templateName);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplate(String templateName, String content) {
+        if (!builtinTemplateNames().contains(templateName)) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "未知模板：" + templateName);
+        }
+        if (content == null || content.isBlank()) {
+            throw new BizException(ErrorCode.BAD_REQUEST.getCode(), "模板内容不能为空");
+        }
+        GenTemplate exist = templateMapper.selectOne(Wrappers.<GenTemplate>lambdaQuery()
+                .eq(GenTemplate::getTemplateName, templateName)
+                .last("LIMIT 1"));
+        if (exist == null) {
+            GenTemplate entity = new GenTemplate();
+            entity.setTemplateName(templateName);
+            entity.setContent(content);
+            entity.setCreateTime(LocalDateTime.now());
+            entity.setUpdateTime(LocalDateTime.now());
+            templateMapper.insert(entity);
+        } else {
+            exist.setContent(content);
+            exist.setUpdateTime(LocalDateTime.now());
+            templateMapper.updateById(exist);
+        }
+        renderer.invalidate(templateName);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void resetTemplate(String templateName) {
+        templateMapper.delete(Wrappers.<GenTemplate>lambdaQuery().eq(GenTemplate::getTemplateName, templateName));
+        renderer.invalidate(templateName);
+    }
+
+    /** 内置模板清单：扫 classpath 目录，新增 .ftl 自动出现 */
+    private List<String> builtinTemplateNames() {
+        try {
+            Resource[] resources = new PathMatchingResourcePatternResolver()
+                    .getResources("classpath:" + TemplateRenderer.BUILTIN_DIR + "/*.ftl");
+            return java.util.Arrays.stream(resources)
+                    .map(resource -> {
+                        String filename = resource.getFilename();
+                        return filename == null ? "" : filename;
+                    })
+                    .filter(name -> !name.isEmpty())
+                    .sorted(Comparator.naturalOrder())
+                    .toList();
+        } catch (IOException e) {
+            throw new IllegalStateException("读取内置模板列表失败：" + e.getMessage(), e);
+        }
+    }
+
     private Map<String, String> generate(GenTable table, List<GenTableColumn> columns) {
         Map<String, Object> model = genModel.build(table, columns);
         String basePackage = table.getPackageName().replace('.', '/');
@@ -327,6 +474,9 @@ public class GenTableServiceImpl implements GenTableService {
         files.put(
                 "frontend/src/views/" + module + "/" + business + "/schema.ts",
                 renderer.render("schema.ts.ftl", model));
+        files.put(
+                "frontend/src/views/" + module + "/" + business + "/index.vue",
+                renderer.render("index.vue.ftl", model));
         files.put("sql/menu_" + table.getTableName() + ".sql", renderer.render("menu.sql.ftl", model));
         files.put("README.txt", readme(table));
         return files;
@@ -402,15 +552,5 @@ public class GenTableServiceImpl implements GenTableService {
         vo.setDictType(column.getDictType());
         vo.setSort(column.getSort());
         return vo;
-    }
-
-    /** 预留：批量下载多张表 */
-    @SuppressWarnings("unused")
-    private List<Map<String, String>> batchPreview(List<Long> tableIds) {
-        List<Map<String, String>> result = new ArrayList<>();
-        for (Long id : tableIds) {
-            result.add(preview(id));
-        }
-        return result;
     }
 }

@@ -111,6 +111,11 @@ public class ColumnTypes {
         return "EQ";
     }
 
+    /** 列表里只保留 create_time，create_by/update_by/update_time 是噪音 */
+    public static boolean isListVisibleAuditColumn(String columnName) {
+        return "create_time".equals(columnName);
+    }
+
     /** BaseEntity 的时间/操作人字段：列表可见，表单不出现 */
     public static boolean isAuditColumn(String columnName) {
         return "create_by".equals(columnName)

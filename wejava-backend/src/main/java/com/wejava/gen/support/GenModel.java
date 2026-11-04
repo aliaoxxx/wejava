@@ -134,13 +134,20 @@ public class GenModel {
         item.put("dictType", column.getDictType());
         item.put("sort", column.getSort());
 
-        // 估算生成的查询链单行宽度：超过 palantir 的 120 列就必须换行，
+        // 精确构造查询链单行，超过 palantir 的 120 列就必须折行，
         // 否则 spotless:check 会判定格式不合规
         String fieldCap = GenNaming.capitalize(column.getJavaField());
-        int stringLen = 83 + 3 * fieldCap.length() + className.length();
-        int numberLen = 68 + 3 * fieldCap.length() + className.length();
-        item.put("wrapStringCall", stringLen > 120);
-        item.put("wrapNumberCall", numberLen > 120);
+        String indent = "                        ";
+        String get = "::get" + fieldCap;
+        String stringLine = indent + "." + column.getQueryType().toLowerCase() + "(StringUtils.hasText(query.get"
+                + fieldCap + "()), " + className + get + ", query.get" + fieldCap + "())";
+        String numberLine = indent + ".eq(query.get" + fieldCap + "() != null, " + className + get + ", query.get"
+                + fieldCap + "())";
+        String betweenLine = indent + ".ge(query.getBegin" + fieldCap + "() != null, " + className + get
+                + ", query.getBegin" + fieldCap + "())";
+        item.put("wrapStringCall", stringLine.length() > 120);
+        item.put("wrapNumberCall", numberLine.length() > 120);
+        item.put("wrapBetweenCall", betweenLine.length() > 120);
         return item;
     }
 

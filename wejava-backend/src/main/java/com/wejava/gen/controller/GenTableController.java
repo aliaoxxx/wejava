@@ -8,6 +8,7 @@ import com.wejava.gen.model.form.GenTableForm;
 import com.wejava.gen.model.query.GenTableQuery;
 import com.wejava.gen.model.vo.DbTableVO;
 import com.wejava.gen.model.vo.GenTableVO;
+import com.wejava.gen.model.vo.GenTemplateVO;
 import com.wejava.gen.service.GenTableService;
 import jakarta.validation.Valid;
 import java.net.URLEncoder;
@@ -91,10 +92,48 @@ public class GenTableController {
 
     @PreAuthorize("@ps.has('system:gen:code')")
     @OperLog(title = "代码生成", businessType = BusinessType.EXPORT)
+    @PostMapping("/batch-download")
+    public ResponseEntity<byte[]> batchDownload(@RequestBody List<Long> tableIds) {
+        return zip(genTableService.batchDownload(tableIds), "wejava-code-batch.zip");
+    }
+
+    @PreAuthorize("@ps.has('system:gen:code')")
+    @GetMapping("/template/list")
+    public R<List<GenTemplateVO>> templateList() {
+        return R.ok(genTableService.templates());
+    }
+
+    @PreAuthorize("@ps.has('system:gen:code')")
+    @GetMapping("/template/{templateName}")
+    public R<String> templateContent(@PathVariable String templateName) {
+        return R.ok(genTableService.templateContent(templateName));
+    }
+
+    @PreAuthorize("@ps.has('system:gen:code')")
+    @OperLog(title = "代码生成模板", businessType = BusinessType.UPDATE)
+    @PutMapping("/template/{templateName}")
+    public R<Void> saveTemplate(@PathVariable String templateName, @RequestBody Map<String, String> body) {
+        genTableService.saveTemplate(templateName, body.get("content"));
+        return R.ok();
+    }
+
+    @PreAuthorize("@ps.has('system:gen:code')")
+    @OperLog(title = "代码生成模板", businessType = BusinessType.DELETE)
+    @DeleteMapping("/template/{templateName}")
+    public R<Void> resetTemplate(@PathVariable String templateName) {
+        genTableService.resetTemplate(templateName);
+        return R.ok();
+    }
+
+    @PreAuthorize("@ps.has('system:gen:code')")
+    @OperLog(title = "代码生成", businessType = BusinessType.EXPORT)
     @GetMapping("/download/{tableId}")
     public ResponseEntity<byte[]> download(@PathVariable Long tableId) {
-        byte[] bytes = genTableService.download(tableId);
-        String fileName = URLEncoder.encode("wejava-code-" + tableId + ".zip", StandardCharsets.UTF_8);
+        return zip(genTableService.download(tableId), "wejava-code-" + tableId + ".zip");
+    }
+
+    private ResponseEntity<byte[]> zip(byte[] bytes, String rawName) {
+        String fileName = URLEncoder.encode(rawName, StandardCharsets.UTF_8);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + fileName)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

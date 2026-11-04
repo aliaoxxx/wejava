@@ -69,25 +69,60 @@ export function removeGenTable(tableIds: string) {
   return http.delete(`/system/gen/table/${tableIds}`)
 }
 
+export interface GenTemplateItem {
+  templateName: string
+  overridden: boolean
+  contentLength: number
+  updateTime?: string
+}
+
+export function listGenTemplates() {
+  return http.get<GenTemplateItem[]>('/system/gen/table/template/list')
+}
+
+export function getGenTemplate(name: string) {
+  return http.get<string>(`/system/gen/table/template/${name}`)
+}
+
+export function saveGenTemplate(name: string, content: string) {
+  return http.put(`/system/gen/table/template/${name}`, { content })
+}
+
+export function resetGenTemplate(name: string) {
+  return http.delete(`/system/gen/table/template/${name}`)
+}
+
 export function previewGenCode(tableId: string) {
   return http.get<Record<string, string>>(`/system/gen/table/preview/${tableId}`)
 }
 
 /** 下载 zip：走原生 fetch，避免响应拦截器把二进制当成 JSON 解析 */
-export async function downloadGenCode(tableId: string, fileName = `wejava-code-${tableId}.zip`) {
+async function fetchZip(url: string, init: RequestInit, fileName: string) {
   const token = localStorage.getItem('wejava:access_token') ?? ''
-  const response = await fetch(
-    `${import.meta.env.VITE_APP_BASE_API}/system/gen/table/download/${tableId}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
+  const response = await fetch(url, {
+    ...init,
+    headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` }
+  })
   if (!response.ok) {
     throw new Error(`下载失败：HTTP ${response.status}`)
   }
   const blob = await response.blob()
-  const url = URL.createObjectURL(blob)
+  const objectUrl = URL.createObjectURL(blob)
   const link = document.createElement('a')
-  link.href = url
+  link.href = objectUrl
   link.download = fileName
   link.click()
-  URL.revokeObjectURL(url)
+  URL.revokeObjectURL(objectUrl)
+}
+
+export async function downloadGenCode(tableId: string, fileName = `wejava-code-${tableId}.zip`) {
+  await fetchZip(`${import.meta.env.VITE_APP_BASE_API}/system/gen/table/download/${tableId}`, {}, fileName)
+}
+
+export async function batchDownloadGenCode(tableIds: string[]) {
+  await fetchZip(
+    `${import.meta.env.VITE_APP_BASE_API}/system/gen/table/batch-download`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tableIds) },
+    'wejava-code-batch.zip'
+  )
 }

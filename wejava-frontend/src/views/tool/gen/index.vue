@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { menuTreeSelect } from '@/api/menu'
 import {
+  batchDownloadGenCode,
   downloadGenCode,
   getGenTable,
   importTables,
   listDbTables,
   listGenTable,
+  listGenTemplates,
+  getGenTemplate,
+  saveGenTemplate,
+  resetGenTemplate,
   previewGenCode,
   removeGenTable,
   updateGenTable,
   type DbTableItem,
   type GenColumnItem,
   type GenTableDetail,
-  type GenTableItem
+  type GenTableItem,
+  type GenTemplateItem
 } from '@/api/gen'
 
 const loading = ref(false)
@@ -47,6 +54,20 @@ const importVisible = ref(false)
 const importLoading = ref(false)
 const dbTables = ref<DbTableItem[]>([])
 const selectedTables = ref<string[]>([])
+const selectedRows = ref<GenTableItem[]>([])
+
+async function handleBatchDownload() {
+  if (!selectedRows.value.length) {
+    ElMessage.warning('请先勾选要生成的表')
+    return
+  }
+  try {
+    await batchDownloadGenCode(selectedRows.value.map((row) => row.tableId))
+    ElMessage.success(`已生成 ${selectedRows.value.length} 张表`)
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
 
 async function openImport() {
   importVisible.value = true
@@ -183,6 +204,69 @@ async function handleRemove(row: GenTableItem) {
   await fetchList()
 }
 
+/* ---------------- 模板管理 ---------------- */
+const templateVisible = ref(false)
+const templateLoading = ref(false)
+const templates = ref<GenTemplateItem[]>([])
+const activeTemplate = ref('')
+const templateContent = ref('')
+const templateSaving = ref(false)
+
+async function openTemplates() {
+  templateVisible.value = true
+  templateLoading.value = true
+  try {
+    const res = await listGenTemplates()
+    templates.value = res.data ?? []
+    if (!activeTemplate.value || !templates.value.some((t) => t.templateName === activeTemplate.value)) {
+      activeTemplate.value = templates.value[0]?.templateName ?? ''
+    }
+    await loadTemplateContent()
+  } finally {
+    templateLoading.value = false
+  }
+}
+
+async function loadTemplateContent() {
+  if (!activeTemplate.value) return
+  const res = await getGenTemplate(activeTemplate.value)
+  templateContent.value = res.data ?? ''
+}
+
+async function selectTemplate(name: string) {
+  activeTemplate.value = name
+  await loadTemplateContent()
+}
+
+async function saveTemplate() {
+  templateSaving.value = true
+  try {
+    await saveGenTemplate(activeTemplate.value, templateContent.value)
+    ElMessage.success('模板已保存，下次生成生效')
+    await openTemplates()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    templateSaving.value = false
+  }
+}
+
+async function resetTemplate() {
+  await ElMessageBox.confirm('恢复内置模板？在线修改的内容会丢失。', '恢复默认', { type: 'warning' })
+  await resetGenTemplate(activeTemplate.value)
+  ElMessage.success('已恢复默认模板')
+  await openTemplates()
+}
+
+/* ---------------- 父菜单选择 ---------------- */
+const menuTree = ref<Record<string, unknown>[]>([])
+
+async function loadMenuTree() {
+  if (menuTree.value.length) return
+  const res = await menuTreeSelect()
+  menuTree.value = res.data ?? []
+}
+
 onMounted(fetchList)
 </script>
 
@@ -192,9 +276,19 @@ onMounted(fetchList)
       <template #header>
         <div class="card-header">
           <span>代码生成</span>
-          <el-button v-hasPerm="'system:gen:import'" type="primary" @click="openImport">
-            导入表
-          </el-button>
+          <div>
+            <el-button v-hasPerm="'system:gen:code'" @click="openTemplates">模板管理</el-button>
+            <el-button
+              v-hasPerm="'system:gen:code'"
+              :disabled="!selectedRows.length"
+              @click="handleBatchDownload"
+            >
+              批量下载{{ selectedRows.length ? `（${selectedRows.length}）` : '' }}
+            </el-button>
+            <el-button v-hasPerm="'system:gen:import'" type="primary" @click="openImport">
+              导入表
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -219,7 +313,14 @@ onMounted(fetchList)
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="rows" border stripe>
+      <el-table
+        v-loading="loading"
+        :data="rows"
+        border
+        stripe
+        @selection-change="(rows: GenTableItem[]) => (selectedRows = rows)"
+      >
+        <el-table-column type="selection" width="46" />
         <el-table-column prop="tableName" label="表名" min-width="180" show-overflow-tooltip />
         <el-table-column prop="tableComment" label="表描述" min-width="160" show-overflow-tooltip />
         <el-table-column prop="className" label="实体类" min-width="140" />
@@ -345,8 +446,18 @@ onMounted(fetchList)
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="父菜单ID">
-                <el-input v-model="editForm.parentMenuId" placeholder="留空则挂到顶级菜单" />
+              <el-form-item label="父菜单">
+                <el-tree-select
+                  v-model="editForm.parentMenuId"
+                  :data="menuTree"
+                  node-key="menuId"
+                  :props="{ label: 'menuName', children: 'children' }"
+                  check-strictly
+                  clearable
+                  placeholder="留空则挂到顶级菜单"
+                  style="width: 100%"
+                  @visible-change="(v: boolean) => v && loadMenuTree()"
+                />
               </el-form-item>
             </el-col>
           </el-row>
@@ -410,6 +521,43 @@ onMounted(fetchList)
       <template #footer>
         <el-button @click="editVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submitEdit">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 模板管理 -->
+    <el-dialog v-model="templateVisible" title="模板管理" width="1080px" top="5vh" destroy-on-close>
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        title="模板默认来自 WAR 内置版本；在线修改后存入数据库并优先生效。删除覆盖即恢复内置模板。"
+        class="hint"
+      />
+      <div v-loading="templateLoading" class="preview">
+        <div class="file-list">
+          <div
+            v-for="item in templates"
+            :key="item.templateName"
+            class="file-item"
+            :class="{ active: item.templateName === activeTemplate }"
+            @click="selectTemplate(item.templateName)"
+          >
+            {{ item.templateName }}
+            <el-tag v-if="item.overridden" size="small" type="warning" class="tag">已改</el-tag>
+          </div>
+        </div>
+        <el-input
+          v-model="templateContent"
+          type="textarea"
+          class="editor"
+          resize="none"
+          spellcheck="false"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="templateVisible = false">关闭</el-button>
+        <el-button :disabled="!activeTemplate" @click="resetTemplate">恢复默认</el-button>
+        <el-button type="primary" :loading="templateSaving" @click="saveTemplate">保存</el-button>
       </template>
     </el-dialog>
 
@@ -482,6 +630,19 @@ onMounted(fetchList)
 .file-item.active {
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+}
+.editor {
+  flex: 1;
+  height: 100%;
+}
+.editor :deep(textarea) {
+  height: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.tag {
+  margin-left: 6px;
 }
 .code {
   flex: 1;

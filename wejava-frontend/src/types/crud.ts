@@ -41,7 +41,7 @@ export interface PageData<T = CrudRow> {
 export interface SearchField {
   prop: string
   label: string
-  type: 'input' | 'select' | 'date' | 'daterange' | 'number'
+  type: 'input' | 'select' | 'date' | 'datetime' | 'daterange' | 'number'
   placeholder?: string
   options?: Option[]
   /** 字典类型，优先级高于 options */

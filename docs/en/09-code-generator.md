@@ -4,7 +4,7 @@
 
 > Goal: read a database table → generate 9 backend files + frontend `api.ts` / `schema.ts` + menu SQL,
 > turning "add a table" from **half a day of hand-writing** into **one minute**.
-> Status: **P1 implemented** (V16 migration + import/config/preview/download + 12 templates + UI).
+> Status: **P1 + P2 implemented** (batch generation, online template editing, menu parent; validated against a real business table).
 
 ---
 
@@ -229,6 +229,48 @@ backend      9 Java files compile on the first try, spotless:check passes unchan
 frontend     schema.ts passes vue-tsc, api.ts passes lint
 menu SQL     menu + 5 button permissions, granted to role_id=1
 download     zip 8.2 KB, layout matches the design
+```
+
+## 14. P2 implementation
+
+| Capability | How |
+|---|---|
+| Batch generation | Multi-select → one zip with a sub-directory per table (avoids file name collisions) |
+| Online template editing | Templates ship in the WAR; edits are stored in `gen_template` (V17) and take precedence, deleting the row restores the built-in version |
+| Menu parent | The numeric "parent menu id" field became a menu tree picker (reusing `/system/menu/tree-select`); generated `menu.sql` carries the real parent id |
+
+## 15. Real business table validation (`biz_contract`, with dict and date ranges)
+
+Validated with a contract table containing number, name, type (dict), amount,
+sign date, expiry datetime, status, remark and audit columns.
+
+**Five issues found and fixed** (none of them surfaced with the small demo table):
+
+| Issue | Symptom | Fix |
+|---|---|---|
+| Number column not queryable | `contract_no` not treated as a filter | added `_no` / `_sn` / `_type` / `_date` / `_time` inference |
+| Type column without dict | `contract_type` had no dictionary | infer `{module}_{business}_type`; dict-bound columns default to `select` |
+| Date columns not queryable | `sign_date` / `expire_time` missing from filters | date/time columns default to BETWEEN |
+| Audit column noise | `create_by` / `update_time` shown in the list | keep only `create_time` |
+| **missing index.vue** | menu opened a blank page | added the 13th template, `index.vue.ftl` |
+
+Two cross-layer issues as well:
+
+**① Date parameter format**: the picker sends `2026-01-01 00:00:00` while Spring only
+accepts ISO with `T`. Added global `DateTimeConverters` accepting three formats.
+
+**② Missing `datetime` search type**: `SearchField.type` only had `date`. Added the type
+and a `CrudSearch` branch.
+
+**Final acceptance**:
+
+```
+13 files generated    compile · spotless:check · vue-tsc all pass
+menu SQL              parent attached to 1000, button permissions complete
+CRUD API              create / detail / list / update / delete all 200
+date range queries    by sign date and expiry both correct
+dict filtering        type and status filter by dict value correctly
+page render           9 filters, 7 columns (with dict labels), pagination fine
 ```
 
 ## 12. Explicit non-goals

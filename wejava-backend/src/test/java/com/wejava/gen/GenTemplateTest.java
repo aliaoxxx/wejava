@@ -1,7 +1,9 @@
 package com.wejava.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.wejava.gen.mapper.GenTemplateMapper;
 import com.wejava.gen.model.entity.GenTable;
 import com.wejava.gen.model.entity.GenTableColumn;
 import com.wejava.gen.support.GenModel;
@@ -19,7 +21,8 @@ import org.junit.jupiter.api.Test;
 class GenTemplateTest {
 
     private final GenModel genModel = new GenModel();
-    private final TemplateRenderer renderer = new TemplateRenderer();
+    /** 没有覆盖模板时走 classpath，mock 返回 null 即代表未覆盖 */
+    private final TemplateRenderer renderer = new TemplateRenderer(mock(GenTemplateMapper.class));
 
     private GenTable table() {
         GenTable table = new GenTable();

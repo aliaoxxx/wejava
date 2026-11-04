@@ -1,13 +1,18 @@
 package ${table.packageName}.converter;
 
-import ${table.packageName}.model.entity.${table.className};
-import ${table.packageName}.model.form.${table.className}Form;
-import ${table.packageName}.model.vo.${table.className}VO;
-import java.util.List;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+<#assign converterImports = [
+    table.packageName + ".model.entity." + table.className,
+    table.packageName + ".model.form." + table.className + "Form",
+    table.packageName + ".model.vo." + table.className + "VO",
+    "java.util.List",
+    "org.mapstruct.Mapper",
+    "org.mapstruct.Mapping",
+    "org.mapstruct.MappingTarget",
+    "org.mapstruct.NullValuePropertyMappingStrategy"
+]>
+<#list converterImports?sort as imp>
+import ${imp};
+</#list>
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ${table.className}Converter {

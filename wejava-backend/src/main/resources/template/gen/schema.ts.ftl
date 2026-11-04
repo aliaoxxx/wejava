@@ -26,12 +26,12 @@ export const ${table.businessName}Schema: CrudSchema = {
   search: [
 <#list queryColumns as col>
 <#if col.queryType == "BETWEEN">
-    { prop: 'begin${col.javaFieldCap}', label: '${col.columnComment}起', type: 'date' },
-    { prop: 'end${col.javaFieldCap}', label: '${col.columnComment}止', type: 'date' },
+    { prop: 'begin${col.javaFieldCap}', label: '${col.columnComment}起', type: '<#if col.htmlType == "datetime">datetime<#else>date</#if>' },
+    { prop: 'end${col.javaFieldCap}', label: '${col.columnComment}止', type: '<#if col.htmlType == "datetime">datetime<#else>date</#if>' },
 <#elseif col.htmlType == "switch">
     { prop: '${col.javaField}', label: '${col.columnComment}', type: 'select'<#if col.dictType?? && col.dictType != "">, dict: '${col.dictType}'</#if> },
 <#else>
-    { prop: '${col.javaField}', label: '${col.columnComment}', type: '${col.htmlType}' },
+    { prop: '${col.javaField}', label: '${col.columnComment}', type: '${col.htmlType}'<#if col.dictType?? && col.dictType != "">, dict: '${col.dictType}'</#if> },
 </#if>
 </#list>
   ],

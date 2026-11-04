@@ -1,22 +1,27 @@
 package ${table.packageName}.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wejava.common.core.PageResult;
-import com.wejava.common.exception.BizException;
-import com.wejava.common.exception.ErrorCode;
-import ${table.packageName}.converter.${table.className}Converter;
-import ${table.packageName}.mapper.${table.className}Mapper;
-import ${table.packageName}.model.entity.${table.className};
-import ${table.packageName}.model.form.${table.className}Form;
-import ${table.packageName}.model.query.${table.className}Query;
-import ${table.packageName}.model.vo.${table.className}VO;
-import ${table.packageName}.service.${table.className}Service;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+<#assign implImports = [
+    "com.baomidou.mybatisplus.core.toolkit.Wrappers",
+    "com.baomidou.mybatisplus.extension.plugins.pagination.Page",
+    "com.wejava.common.core.PageResult",
+    "com.wejava.common.exception.BizException",
+    "com.wejava.common.exception.ErrorCode",
+    table.packageName + ".converter." + table.className + "Converter",
+    table.packageName + ".mapper." + table.className + "Mapper",
+    table.packageName + ".model.entity." + table.className,
+    table.packageName + ".model.form." + table.className + "Form",
+    table.packageName + ".model.query." + table.className + "Query",
+    table.packageName + ".model.vo." + table.className + "VO",
+    table.packageName + ".service." + table.className + "Service",
+    "java.util.List",
+    "lombok.RequiredArgsConstructor",
+    "org.springframework.stereotype.Service",
+    "org.springframework.transaction.annotation.Transactional",
+    "org.springframework.util.StringUtils"
+]>
+<#list implImports?sort as imp>
+import ${imp};
+</#list>
 
 /** ${table.functionName} */
 @Service
@@ -34,8 +39,19 @@ public class ${table.className}ServiceImpl implements ${table.className}Service 
                 Wrappers.<${table.className}>lambdaQuery()
 <#list queryColumns as col>
 <#if col.queryType == "BETWEEN">
+<#if col.wrapBetweenCall>
+                        .ge(
+                                query.getBegin${col.javaFieldCap}() != null,
+                                ${table.className}::get${col.javaFieldCap},
+                                query.getBegin${col.javaFieldCap}())
+                        .le(
+                                query.getEnd${col.javaFieldCap}() != null,
+                                ${table.className}::get${col.javaFieldCap},
+                                query.getEnd${col.javaFieldCap}())
+<#else>
                         .ge(query.getBegin${col.javaFieldCap}() != null, ${table.className}::get${col.javaFieldCap}, query.getBegin${col.javaFieldCap}())
                         .le(query.getEnd${col.javaFieldCap}() != null, ${table.className}::get${col.javaFieldCap}, query.getEnd${col.javaFieldCap}())
+</#if>
 <#elseif col.javaType == "String">
 <#if col.wrapStringCall>
                         .${col.queryType?lower_case}(

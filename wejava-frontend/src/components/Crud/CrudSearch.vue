@@ -32,6 +32,15 @@ const emit = defineEmits<{ search: []; reset: [] }>()
       />
 
       <el-date-picker
+        v-else-if="field.type === 'datetime'"
+        v-model="model[field.prop]"
+        type="datetime"
+        value-format="YYYY-MM-DD HH:mm:ss"
+        placeholder="选择时间"
+        style="width: 200px"
+      />
+
+      <el-date-picker
         v-else-if="field.type === 'daterange'"
         v-model="model[field.prop]"
         type="datetimerange"

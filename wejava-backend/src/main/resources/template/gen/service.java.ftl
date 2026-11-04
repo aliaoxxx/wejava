@@ -1,10 +1,15 @@
 package ${table.packageName}.service;
 
-import com.wejava.common.core.PageResult;
-import ${table.packageName}.model.form.${table.className}Form;
-import ${table.packageName}.model.query.${table.className}Query;
-import ${table.packageName}.model.vo.${table.className}VO;
-import java.util.List;
+<#assign serviceImports = [
+    "com.wejava.common.core.PageResult",
+    table.packageName + ".model.form." + table.className + "Form",
+    table.packageName + ".model.query." + table.className + "Query",
+    table.packageName + ".model.vo." + table.className + "VO",
+    "java.util.List"
+]>
+<#list serviceImports?sort as imp>
+import ${imp};
+</#list>
 
 /** ${table.functionName} */
 public interface ${table.className}Service {

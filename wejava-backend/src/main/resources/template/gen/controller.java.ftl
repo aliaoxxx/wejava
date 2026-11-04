@@ -1,25 +1,30 @@
 package ${table.packageName}.controller;
 
-import com.wejava.common.annotation.BusinessType;
-import com.wejava.common.annotation.OperLog;
-import com.wejava.common.core.PageResult;
-import com.wejava.common.core.R;
-import ${table.packageName}.model.form.${table.className}Form;
-import ${table.packageName}.model.query.${table.className}Query;
-import ${table.packageName}.model.vo.${table.className}VO;
-import ${table.packageName}.service.${table.className}Service;
-import jakarta.validation.Valid;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+<#assign controllerImports = [
+    "com.wejava.common.annotation.BusinessType",
+    "com.wejava.common.annotation.OperLog",
+    "com.wejava.common.core.PageResult",
+    "com.wejava.common.core.R",
+    table.packageName + ".model.form." + table.className + "Form",
+    table.packageName + ".model.query." + table.className + "Query",
+    table.packageName + ".model.vo." + table.className + "VO",
+    table.packageName + ".service." + table.className + "Service",
+    "jakarta.validation.Valid",
+    "java.util.List",
+    "lombok.RequiredArgsConstructor",
+    "org.springframework.security.access.prepost.PreAuthorize",
+    "org.springframework.web.bind.annotation.DeleteMapping",
+    "org.springframework.web.bind.annotation.GetMapping",
+    "org.springframework.web.bind.annotation.PathVariable",
+    "org.springframework.web.bind.annotation.PostMapping",
+    "org.springframework.web.bind.annotation.PutMapping",
+    "org.springframework.web.bind.annotation.RequestBody",
+    "org.springframework.web.bind.annotation.RequestMapping",
+    "org.springframework.web.bind.annotation.RestController"
+]>
+<#list controllerImports?sort as imp>
+import ${imp};
+</#list>
 
 /** ${table.functionName} */
 @RestController

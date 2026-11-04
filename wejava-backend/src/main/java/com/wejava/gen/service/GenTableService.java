@@ -5,6 +5,7 @@ import com.wejava.gen.model.form.GenTableForm;
 import com.wejava.gen.model.query.GenTableQuery;
 import com.wejava.gen.model.vo.DbTableVO;
 import com.wejava.gen.model.vo.GenTableVO;
+import com.wejava.gen.model.vo.GenTemplateVO;
 import java.util.List;
 import java.util.Map;
 
@@ -29,4 +30,19 @@ public interface GenTableService {
 
     /** 下载 zip */
     byte[] download(Long tableId);
+
+    /** 批量下载：一个 zip，每张表一个子目录 */
+    byte[] batchDownload(List<Long> tableIds);
+
+    /** 模板列表（内置 + 是否被覆盖） */
+    List<GenTemplateVO> templates();
+
+    /** 模板当前生效内容 */
+    String templateContent(String templateName);
+
+    /** 保存覆盖模板 */
+    void saveTemplate(String templateName, String content);
+
+    /** 删除覆盖，恢复内置模板 */
+    void resetTemplate(String templateName);
 }
