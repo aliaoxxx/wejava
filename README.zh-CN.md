@@ -159,6 +159,7 @@ Apple Silicon 上 overlay 会指定 `platform: linux/amd64`，走模拟运行）
 - [前端配置驱动设计](docs/06-前端配置驱动设计.md)
 - [部署方案](docs/07-部署方案.md)
 - [AI 多服务商设计](docs/08-AI多服务商设计.md)
+- [代码生成器设计](docs/09-代码生成器设计.md)
 - [避坑清单](docs/避坑清单.md)
 - [演示脚本](docs/demo-script.md)
 
